@@ -21,6 +21,10 @@ that duplication is exactly what went stale before this file existed.
 | 4 | `backend/app.py` refactored to an application-factory (`create_app(...)`); no endpoint behavior changed | `backend/app.py` |
 | 4 | `backend/tests/test_app.py` — 36 tests (CRUD, path-escape rejection, rename/copy edge cases, `412` conflicts, readonly mode) | `backend/tests/` |
 | 4 | Fixed import-time side effect: `app.py` used to create `./workspace` and start the watch-poller just by being imported | `backend/app.py` |
+| 5 | `backend/nlp_tools.py` — stdlib-only fuzzy path search (`collections.Counter` + `difflib`), a regex rule table + Naive-Bayes-style fallback for error translation, and a tiny n-gram/Markov model for "did you mean"/autocomplete, trained on this workspace's own docstrings + Markdown | `backend/nlp_tools.py` |
+| 5 | New endpoints: `GET /workspace/search/fuzzy`, `GET /workspace/explain-error`, `GET /workspace/search/suggest` | `backend/app.py` |
+| 5 | `backend/tests/test_nlp_tools.py` — 30 tests covering tokenizer, fuzzy ranking, error-rule matching + fallback classifier, n-gram model, corpus building | `backend/tests/test_nlp_tools.py` |
+| 5 | `backend/tests/test_app.py` — 12 new tests for the three endpoints above (400s, typo-tolerance, empty-workspace edge case) | `backend/tests/test_app.py` |
 
 ## Not started
 
@@ -39,53 +43,26 @@ deferred rather than dropped:
       which aren't available as a plain Node import the way Flask's
       test client is for the backend.
 
-### Stage 5 — Small, dependency-free tooling (stdlib-only statistics, not ML)
+### Stage 5 remainder — not yet done
 
-Goal: a handful of small, auditable helpers built entirely on the
-Python standard library (`difflib`, `collections`, `re`, `math`,
-`random`, `string`) — no numpy, no torch, no external model weights.
-These are the same category of technique 1990s/2000s-era chatbots and
-search tools used before neural nets were practical to run locally:
-frequency counting, Markov chains, bag-of-words, edit distance,
-hand-authored pattern/response rules. Framed here as small developer-
-tooling utilities, not a general chatbot.
+Core Stage 5 tooling landed (see Done, above). Two things from the
+original scope are still open:
 
-- [ ] **Fuzzy component/file search.** An inverted index over file
-      names, paths, and (optionally) exported symbol names, built
-      with `collections.Counter` for term frequency and
-      `difflib.get_close_matches` / `difflib.SequenceMatcher` for
-      typo-tolerant ranking. No embeddings, no vector DB — a bag-of-
-      words score plus edit-distance fallback is enough for "find
-      the file I'm thinking of" in a codebase-sized workspace, and it
-      runs instantly with zero setup.
-- [ ] **Human-readable error translation.** A small table of
-      `(regex pattern -> template)` rules — the same shape as
-      ELIZA's substitution rules — that turns raw backend/filesystem
-      errors (`OSError: [Errno 13] Permission denied`, the backend's
-      `409 file already exists`, a `412` concurrency conflict) into a
-      plain-English terminal message with a suggested next action.
-      A small `collections.Counter`/`math.log`-based Naive-Bayes-style
-      classifier (word counts, no external corpus needed beyond the
-      rule table itself) can pick the right template when a raw
-      message doesn't match a rule exactly.
-- [ ] **Old-school "chatbot" tricks, repurposed for dev tooling.**
-      A tiny n-gram/Markov model (`collections.defaultdict(list)` +
-      `random.choice`) trained on nothing fancier than this repo's
-      own docstrings, commit messages, and README content, used for:
-      - Search-query autocomplete / "did you mean" suggestions,
-        instead of chit-chat generation.
-      - A `/workspace/search` ranking boost: score candidate lines by
-        n-gram overlap with the query, on top of the existing plain
-        substring match.
-      Explicitly scoped as a nostalgia-flavored utility layer, not an
-      attempt at a real assistant — the value is that it's fast,
-      dependency-free, fully inspectable, and works offline.
-- [ ] Expose these as new backend endpoints (e.g.
-      `GET /workspace/search/fuzzy?q=...`,
-      `GET /workspace/explain-error?code=...`) so the extension (or
-      any other client) can call them the same way it calls the
-      existing file API, rather than baking the logic into the
-      extension itself.
+- [ ] `/workspace/search` ranking boost: score candidate lines by
+      n-gram overlap with the query (`nlp_tools.ngram_overlap_score`
+      already exists and is unit-tested) on top of the existing plain
+      substring match. Left out of the endpoint itself for now to
+      avoid changing `/workspace/search`'s existing response
+      ordering/behavior without a client that actually needs it.
+- [ ] Extend the fuzzy-search index to (optionally) cover exported
+      symbol names, not just file/dir paths — needs a lightweight way
+      to extract symbols without a full language server (see the
+      Backlog item below, which is the same underlying need).
+- [ ] Commit-message corpus for the n-gram model (`git log`) in
+      addition to docstrings + Markdown — skipped because
+      `WORKSPACE_ROOT` isn't guaranteed to be a git repo, and
+      shelling out to git from the backend felt like scope creep for
+      a "small, dependency-free tooling" stage.
 
 ### Stage 6 — Backend hardening
 

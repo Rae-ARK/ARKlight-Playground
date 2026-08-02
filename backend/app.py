@@ -30,8 +30,18 @@ Endpoints:
     PATCH  /workspace/file/<path>          -> rename/move (JSON: {"newPath": ...})
     POST   /workspace/copy                 -> copy file/dir (JSON: {"from": ..., "to": ...})
     GET    /workspace/search?q=...         -> text search across files
+    GET    /workspace/search/fuzzy?q=...   -> typo-tolerant path search (Stage 5)
+    GET    /workspace/explain-error?message=... -> plain-English error translation (Stage 5)
+    GET    /workspace/search/suggest?q=... -> "did you mean" + n-gram autocomplete (Stage 5)
     GET    /workspace/watch                -> SSE stream of file-change events
     GET    /healthz                        -> liveness
+
+Structure note (Stage 5):
+    /workspace/search/fuzzy, /workspace/explain-error, and
+    /workspace/search/suggest are stdlib-only (no numpy/torch/external
+    model weights) helpers implemented in nlp_tools.py -- see
+    ROADMAP.md for scope and nlp_tools.py's module docstring for how
+    each one works.
 
 Structure note (Stage 4):
     Everything lives behind create_app() now (an application-factory,
@@ -55,6 +65,16 @@ from pathlib import Path
 from flask import Flask, jsonify, request, abort, Response
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
+
+from nlp_tools import (
+    build_corpus,
+    build_ngram_model,
+    did_you_mean,
+    explain_error,
+    fuzzy_search,
+    generate_from_model,
+    tokenize,
+)
 
 # directories skipped everywhere we walk the tree (listing, search, watch)
 NOISE_DIRS = {".git", "node_modules", "__pycache__"}
@@ -138,6 +158,23 @@ def create_app(
 
     watch_lock = threading.Lock()
     watch_subscribers = []  # type: list[queue.Queue]
+
+    # Stage 5: lazily-built, per-app-instance cache for the n-gram/
+    # "did you mean" corpus. Built once on first use from this app's own
+    # WORKSPACE_ROOT (docstrings + Markdown), not at import/creation
+    # time, since walking the tree is real (if bounded) I/O work that a
+    # bare `create_app()` shouldn't do just to exist.
+    suggest_lock = threading.Lock()
+    suggest_cache = {"corpus": None, "model": None, "vocab": None}
+
+    def _get_suggest_corpus():
+        with suggest_lock:
+            if suggest_cache["corpus"] is None:
+                corpus = build_corpus(app.config["WORKSPACE_ROOT"], noise_dirs=NOISE_DIRS)
+                suggest_cache["corpus"] = corpus
+                suggest_cache["model"] = build_ngram_model(corpus, n=2) if corpus else {}
+                suggest_cache["vocab"] = sorted(set(tokenize(corpus)))
+            return suggest_cache["model"], suggest_cache["vocab"]
 
     def _walk_snapshot() -> dict:
         """path -> (kind, mtime) for every file/dir under WORKSPACE_ROOT."""
@@ -418,6 +455,75 @@ def create_app(
             if len(matches) >= limit:
                 break
         return jsonify({"query": query, "matches": matches, "truncated": len(matches) >= limit})
+
+    @app.route("/workspace/search/fuzzy", methods=["GET"])
+    def search_fuzzy():
+        """
+        Typo-tolerant search over file/directory paths (not file
+        *contents* -- see /workspace/search for that). Scores a
+        collections.Counter bag-of-words overlap plus a difflib
+        near-miss bonus and whole-string similarity; no embeddings, no
+        external index. See ROADMAP.md Stage 5 and nlp_tools.py.
+        """
+        query = request.args.get("q", "")
+        if not query:
+            abort(400, description="missing query param 'q'")
+        try:
+            limit = int(request.args.get("limit", 20))
+        except ValueError:
+            abort(400, description="'limit' must be an integer")
+
+        ws_root = app.config["WORKSPACE_ROOT"]
+        paths = []
+        for root_dir, dirs, files in os.walk(ws_root):
+            dirs[:] = [d for d in dirs if d not in NOISE_DIRS]
+            rel_root = Path(root_dir).relative_to(ws_root)
+            for name in dirs + files:
+                paths.append(str(rel_root / name) if str(rel_root) != "." else name)
+
+        matches = fuzzy_search(paths, query, limit=limit)
+        return jsonify({"query": query, "matches": matches})
+
+    @app.route("/workspace/explain-error", methods=["GET"])
+    def explain_error_endpoint():
+        """
+        Translates a raw backend/filesystem error string (query param
+        'message') into a plain-English explanation and a suggested
+        next action, via a small (regex pattern -> template) rule table
+        with a Naive-Bayes-style fallback for near-misses. See
+        ROADMAP.md Stage 5 and nlp_tools.py's ERROR_RULES.
+        """
+        message = request.args.get("message", "")
+        if not message:
+            abort(400, description="missing query param 'message'")
+        return jsonify(explain_error(message))
+
+    @app.route("/workspace/search/suggest", methods=["GET"])
+    def search_suggest():
+        """
+        'Did you mean' suggestions (difflib.get_close_matches against a
+        vocabulary) plus a playful n-gram continuation from a tiny
+        Markov model -- both trained on nothing fancier than this
+        workspace's own docstrings and Markdown files. Explicitly scoped
+        as a nostalgia-flavored autocomplete utility, not a real
+        assistant. See ROADMAP.md Stage 5 and nlp_tools.py.
+        """
+        query = request.args.get("q", "")
+        if not query:
+            abort(400, description="missing query param 'q'")
+        try:
+            limit = int(request.args.get("limit", 5))
+        except ValueError:
+            abort(400, description="'limit' must be an integer")
+
+        model, vocab = _get_suggest_corpus()
+        suggestions = did_you_mean(query, vocab, limit=limit)
+        completion = generate_from_model(model, max_tokens=10) if model else ""
+        return jsonify({
+            "query": query,
+            "did_you_mean": suggestions,
+            "completion": completion,
+        })
 
     @app.route("/healthz", methods=["GET"])
     def healthz():

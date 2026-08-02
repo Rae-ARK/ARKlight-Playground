@@ -35,6 +35,9 @@ Server listens on `:5000` by default (override with `PORT`).
 | PATCH  | `/workspace/file/<path>`    | Rename/move (JSON body: `{"newPath": ...}`)         |
 | POST   | `/workspace/copy`           | Copy file/dir (JSON body: `{"from": ..., "to": ...}`)|
 | GET    | `/workspace/search?q=...`   | Naive substring search across files (200-match cap) |
+| GET    | `/workspace/search/fuzzy?q=...` | Typo-tolerant path search (bag-of-words + difflib) |
+| GET    | `/workspace/explain-error?message=...` | Plain-English translation of a raw error string |
+| GET    | `/workspace/search/suggest?q=...` | "Did you mean" + n-gram autocomplete continuation |
 | GET    | `/workspace/watch`          | Server-Sent Events stream of file-change events     |
 | GET    | `/healthz`                  | Liveness + resolved workspace root + readonly flag  |
 
@@ -53,6 +56,14 @@ events. This is a placeholder for real filesystem notifications
 
 **Read-only mode:** set `ARKLIGHT_READONLY=1` to 403 all
 write/delete/rename/copy requests while still serving reads.
+
+**Stage 5 tooling (`nlp_tools.py`):** the fuzzy/explain-error/suggest
+endpoints above are stdlib-only helpers -- `difflib`, `collections`,
+`re`, `math`, `random`, `ast` -- no numpy/torch/external model
+weights, no network calls. `/workspace/search/suggest` lazily builds
+its "did you mean"/autocomplete corpus from this workspace's own
+Python docstrings and Markdown files the first time it's called, then
+caches it for the life of the process.
 
 ## Next steps
 

@@ -412,6 +412,108 @@ class ReadonlyModeTests(ArklightBackendTestCase):
         self.assertTrue(self.get_json(response)["readonly"])
 
 
+class FuzzySearchEndpointTests(ArklightBackendTestCase):
+    """Stage 5: GET /workspace/search/fuzzy."""
+
+    def setUp(self):
+        super().setUp()
+        self.write_real_file("src/workspaceProvider.ts", b"export const x = 1;")
+        self.write_real_file("README.md", b"# demo")
+
+    def test_missing_query_param_is_400(self):
+        self.assertEqual(self.client.get("/workspace/search/fuzzy").status_code, 400)
+
+    def test_finds_exact_token_match(self):
+        response = self.client.get("/workspace/search/fuzzy?q=workspace")
+        self.assertEqual(response.status_code, 200)
+        body = self.get_json(response)
+        paths = {m["path"] for m in body["matches"]}
+        self.assertIn("src/workspaceProvider.ts", paths)
+
+    def test_typo_tolerant_match(self):
+        response = self.client.get("/workspace/search/fuzzy?q=worksapce")
+        body = self.get_json(response)
+        paths = {m["path"] for m in body["matches"]}
+        self.assertIn("src/workspaceProvider.ts", paths)
+
+    def test_limit_param_caps_results(self):
+        response = self.client.get("/workspace/search/fuzzy?q=e&limit=1")
+        body = self.get_json(response)
+        self.assertLessEqual(len(body["matches"]), 1)
+
+    def test_invalid_limit_is_400(self):
+        response = self.client.get("/workspace/search/fuzzy?q=e&limit=not-a-number")
+        self.assertEqual(response.status_code, 400)
+
+
+class ExplainErrorEndpointTests(ArklightBackendTestCase):
+    """Stage 5: GET /workspace/explain-error."""
+
+    def test_missing_message_param_is_400(self):
+        self.assertEqual(self.client.get("/workspace/explain-error").status_code, 400)
+
+    def test_known_error_returns_rule_and_suggestion(self):
+        response = self.client.get(
+            "/workspace/explain-error?message=" + "OSError: [Errno 13] Permission denied"
+        )
+        self.assertEqual(response.status_code, 200)
+        body = self.get_json(response)
+        self.assertEqual(body["rule"], "permission_denied")
+        self.assertTrue(body["matched"])
+        self.assertTrue(body["suggestion"])
+
+    def test_conflict_error_maps_to_stale_write_rule(self):
+        response = self.client.get("/workspace/explain-error?message=412 changed on disk")
+        body = self.get_json(response)
+        self.assertEqual(body["rule"], "stale_write_conflict")
+
+    def test_unrecognized_message_has_no_rule(self):
+        response = self.client.get("/workspace/explain-error?message=xyzzy plugh")
+        body = self.get_json(response)
+        self.assertIsNone(body["rule"])
+        self.assertFalse(body["matched"])
+
+
+class SearchSuggestEndpointTests(ArklightBackendTestCase):
+    """Stage 5: GET /workspace/search/suggest."""
+
+    def setUp(self):
+        super().setUp()
+        self.write_real_file(
+            "README.md",
+            b"# Demo workspace\nThis workspace exposes a small file API for the workbench.\n",
+        )
+
+    def test_missing_query_param_is_400(self):
+        self.assertEqual(self.client.get("/workspace/search/suggest").status_code, 400)
+
+    def test_returns_did_you_mean_and_completion_keys(self):
+        response = self.client.get("/workspace/search/suggest?q=worksapce")
+        self.assertEqual(response.status_code, 200)
+        body = self.get_json(response)
+        self.assertEqual(body["query"], "worksapce")
+        self.assertIn("did_you_mean", body)
+        self.assertIn("completion", body)
+        self.assertIn("workspace", body["did_you_mean"])
+
+    def test_empty_workspace_does_not_error(self):
+        # A fresh backend instance sees the corpus-building path with no
+        # real content beyond whatever setUp already wrote; explicitly
+        # exercise a workspace with nothing indexable.
+        empty_dir = tempfile.mkdtemp(prefix="arklight-empty-")
+        try:
+            app = create_app(workspace_root=empty_dir, start_watcher=False)
+            app.testing = True
+            client = app.test_client()
+            response = client.get("/workspace/search/suggest?q=anything")
+            self.assertEqual(response.status_code, 200)
+            body = self.get_json(response)
+            self.assertEqual(body["did_you_mean"], [])
+            self.assertEqual(body["completion"], "")
+        finally:
+            shutil.rmtree(empty_dir, ignore_errors=True)
+
+
 class WatchEndpointTests(ArklightBackendTestCase):
     """The SSE stream itself runs forever, so we only assert the response
     is set up correctly (headers/mimetype) without ever consuming the
