@@ -1,0 +1,31 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { InstantiationType, registerSingleton } from "../../../../platform/instantiation/common/extensions.js";
+import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
+import { INativeWorkbenchEnvironmentService } from "../../environment/electron-browser/environmentService.js";
+import { IPathService, AbstractPathService } from "../common/pathService.js";
+import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
+let NativePathService = class extends AbstractPathService {
+  constructor(remoteAgentService, environmentService, contextService) {
+    super(environmentService.userHome, remoteAgentService, environmentService, contextService);
+  }
+};
+NativePathService = __decorateClass([
+  __decorateParam(0, IRemoteAgentService),
+  __decorateParam(1, INativeWorkbenchEnvironmentService),
+  __decorateParam(2, IWorkspaceContextService)
+], NativePathService);
+registerSingleton(IPathService, NativePathService, InstantiationType.Delayed);
+export {
+  NativePathService
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9zZXJ2aWNlcy9wYXRoL2VsZWN0cm9uLWJyb3dzZXIvcGF0aFNlcnZpY2UudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbIi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4gKiAgQ29weXJpZ2h0IChjKSBNaWNyb3NvZnQgQ29ycG9yYXRpb24uIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKiAgTGljZW5zZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgTGljZW5zZS50eHQgaW4gdGhlIHByb2plY3Qgcm9vdCBmb3IgbGljZW5zZSBpbmZvcm1hdGlvbi5cbiAqLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qL1xuXG5pbXBvcnQgeyBJbnN0YW50aWF0aW9uVHlwZSwgcmVnaXN0ZXJTaW5nbGV0b24gfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS9pbnN0YW50aWF0aW9uL2NvbW1vbi9leHRlbnNpb25zLmpzJztcbmltcG9ydCB7IElSZW1vdGVBZ2VudFNlcnZpY2UgfSBmcm9tICcuLi8uLi9yZW1vdGUvY29tbW9uL3JlbW90ZUFnZW50U2VydmljZS5qcyc7XG5pbXBvcnQgeyBJTmF0aXZlV29ya2JlbmNoRW52aXJvbm1lbnRTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vZW52aXJvbm1lbnQvZWxlY3Ryb24tYnJvd3Nlci9lbnZpcm9ubWVudFNlcnZpY2UuanMnO1xuaW1wb3J0IHsgSVBhdGhTZXJ2aWNlLCBBYnN0cmFjdFBhdGhTZXJ2aWNlIH0gZnJvbSAnLi4vY29tbW9uL3BhdGhTZXJ2aWNlLmpzJztcbmltcG9ydCB7IElXb3Jrc3BhY2VDb250ZXh0U2VydmljZSB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL3dvcmtzcGFjZS9jb21tb24vd29ya3NwYWNlLmpzJztcblxuZXhwb3J0IGNsYXNzIE5hdGl2ZVBhdGhTZXJ2aWNlIGV4dGVuZHMgQWJzdHJhY3RQYXRoU2VydmljZSB7XG5cblx0Y29uc3RydWN0b3IoXG5cdFx0QElSZW1vdGVBZ2VudFNlcnZpY2UgcmVtb3RlQWdlbnRTZXJ2aWNlOiBJUmVtb3RlQWdlbnRTZXJ2aWNlLFxuXHRcdEBJTmF0aXZlV29ya2JlbmNoRW52aXJvbm1lbnRTZXJ2aWNlIGVudmlyb25tZW50U2VydmljZTogSU5hdGl2ZVdvcmtiZW5jaEVudmlyb25tZW50U2VydmljZSxcblx0XHRASVdvcmtzcGFjZUNvbnRleHRTZXJ2aWNlIGNvbnRleHRTZXJ2aWNlOiBJV29ya3NwYWNlQ29udGV4dFNlcnZpY2Vcblx0KSB7XG5cdFx0c3VwZXIoZW52aXJvbm1lbnRTZXJ2aWNlLnVzZXJIb21lLCByZW1vdGVBZ2VudFNlcnZpY2UsIGVudmlyb25tZW50U2VydmljZSwgY29udGV4dFNlcnZpY2UpO1xuXHR9XG59XG5cbnJlZ2lzdGVyU2luZ2xldG9uKElQYXRoU2VydmljZSwgTmF0aXZlUGF0aFNlcnZpY2UsIEluc3RhbnRpYXRpb25UeXBlLkRlbGF5ZWQpO1xuIl0sCiAgIm1hcHBpbmdzIjogIjs7Ozs7Ozs7Ozs7QUFLQSxTQUFTLG1CQUFtQix5QkFBeUI7QUFDckQsU0FBUywyQkFBMkI7QUFDcEMsU0FBUywwQ0FBMEM7QUFDbkQsU0FBUyxjQUFjLDJCQUEyQjtBQUNsRCxTQUFTLGdDQUFnQztBQUVsQyxJQUFNLG9CQUFOLGNBQWdDLG9CQUFvQjtBQUFBLEVBRTFELFlBQ3NCLG9CQUNlLG9CQUNWLGdCQUN6QjtBQUNELFVBQU0sbUJBQW1CLFVBQVUsb0JBQW9CLG9CQUFvQixjQUFjO0FBQUEsRUFDMUY7QUFDRDtBQVRhLG9CQUFOO0FBQUEsRUFHSjtBQUFBLEVBQ0E7QUFBQSxFQUNBO0FBQUEsR0FMVTtBQVdiLGtCQUFrQixjQUFjLG1CQUFtQixrQkFBa0IsT0FBTzsiLAogICJuYW1lcyI6IFtdCn0K

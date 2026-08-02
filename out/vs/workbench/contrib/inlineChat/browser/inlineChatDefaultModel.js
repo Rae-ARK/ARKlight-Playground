@@ -1,0 +1,55 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { localize } from "../../../../nls.js";
+import { Extensions as ConfigurationExtensions } from "../../../../platform/configuration/common/configurationRegistry.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { Registry } from "../../../../platform/registry/common/platform.js";
+import { ILanguageModelsService } from "../../chat/common/languageModels.js";
+import { InlineChatConfigKeys } from "../common/inlineChat.js";
+import { createDefaultModelArrays, DefaultModelContribution } from "../../chat/browser/defaultModelContribution.js";
+const arrays = createDefaultModelArrays();
+let InlineChatDefaultModel = class extends DefaultModelContribution {
+  constructor(languageModelsService, logService) {
+    super(arrays, {
+      configKey: InlineChatConfigKeys.DefaultModel,
+      configSectionId: "inlineChat",
+      logPrefix: "[InlineChatDefaultModel]",
+      filter: (metadata) => !!metadata.capabilities?.toolCalling
+    }, languageModelsService, logService);
+  }
+};
+InlineChatDefaultModel.ID = "workbench.contrib.inlineChatDefaultModel";
+InlineChatDefaultModel.modelIds = arrays.modelIds;
+InlineChatDefaultModel.modelLabels = arrays.modelLabels;
+InlineChatDefaultModel.modelDescriptions = arrays.modelDescriptions;
+InlineChatDefaultModel = __decorateClass([
+  __decorateParam(0, ILanguageModelsService),
+  __decorateParam(1, ILogService)
+], InlineChatDefaultModel);
+Registry.as(ConfigurationExtensions.Configuration).registerConfiguration({
+  ...{ id: "inlineChat", title: localize("inlineChatConfigurationTitle", "Inline Chat"), order: 30, type: "object" },
+  properties: {
+    [InlineChatConfigKeys.DefaultModel]: {
+      description: localize("inlineChatDefaultModelDescription", "Select the default language model to use for inline chat from the available providers. Model names may include the provider in parentheses, for example 'Claude Haiku 4.5 (copilot)'."),
+      type: "string",
+      default: "",
+      order: 1,
+      enum: InlineChatDefaultModel.modelIds,
+      enumItemLabels: InlineChatDefaultModel.modelLabels,
+      markdownEnumDescriptions: InlineChatDefaultModel.modelDescriptions
+    }
+  }
+});
+export {
+  InlineChatDefaultModel
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9jb250cmliL2lubGluZUNoYXQvYnJvd3Nlci9pbmxpbmVDaGF0RGVmYXVsdE1vZGVsLnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICogIENvcHlyaWdodCAoYykgTWljcm9zb2Z0IENvcnBvcmF0aW9uLiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICogIExpY2Vuc2VkIHVuZGVyIHRoZSBNSVQgTGljZW5zZS4gU2VlIExpY2Vuc2UudHh0IGluIHRoZSBwcm9qZWN0IHJvb3QgZm9yIGxpY2Vuc2UgaW5mb3JtYXRpb24uXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cblxuaW1wb3J0IHsgbG9jYWxpemUgfSBmcm9tICcuLi8uLi8uLi8uLi9ubHMuanMnO1xuaW1wb3J0IHsgSUNvbmZpZ3VyYXRpb25SZWdpc3RyeSwgRXh0ZW5zaW9ucyBhcyBDb25maWd1cmF0aW9uRXh0ZW5zaW9ucyB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2NvbmZpZ3VyYXRpb24vY29tbW9uL2NvbmZpZ3VyYXRpb25SZWdpc3RyeS5qcyc7XG5pbXBvcnQgeyBJTG9nU2VydmljZSB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2xvZy9jb21tb24vbG9nLmpzJztcbmltcG9ydCB7IFJlZ2lzdHJ5IH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vcmVnaXN0cnkvY29tbW9uL3BsYXRmb3JtLmpzJztcbmltcG9ydCB7IElMYW5ndWFnZU1vZGVsc1NlcnZpY2UgfSBmcm9tICcuLi8uLi9jaGF0L2NvbW1vbi9sYW5ndWFnZU1vZGVscy5qcyc7XG5pbXBvcnQgeyBJbmxpbmVDaGF0Q29uZmlnS2V5cyB9IGZyb20gJy4uL2NvbW1vbi9pbmxpbmVDaGF0LmpzJztcbmltcG9ydCB7IGNyZWF0ZURlZmF1bHRNb2RlbEFycmF5cywgRGVmYXVsdE1vZGVsQ29udHJpYnV0aW9uIH0gZnJvbSAnLi4vLi4vY2hhdC9icm93c2VyL2RlZmF1bHRNb2RlbENvbnRyaWJ1dGlvbi5qcyc7XG5cbmNvbnN0IGFycmF5cyA9IGNyZWF0ZURlZmF1bHRNb2RlbEFycmF5cygpO1xuXG5leHBvcnQgY2xhc3MgSW5saW5lQ2hhdERlZmF1bHRNb2RlbCBleHRlbmRzIERlZmF1bHRNb2RlbENvbnRyaWJ1dGlvbiB7XG5cdHN0YXRpYyByZWFkb25seSBJRCA9ICd3b3JrYmVuY2guY29udHJpYi5pbmxpbmVDaGF0RGVmYXVsdE1vZGVsJztcblxuXHRzdGF0aWMgcmVhZG9ubHkgbW9kZWxJZHMgPSBhcnJheXMubW9kZWxJZHM7XG5cdHN0YXRpYyByZWFkb25seSBtb2RlbExhYmVscyA9IGFycmF5cy5tb2RlbExhYmVscztcblx0c3RhdGljIHJlYWRvbmx5IG1vZGVsRGVzY3JpcHRpb25zID0gYXJyYXlzLm1vZGVsRGVzY3JpcHRpb25zO1xuXG5cdGNvbnN0cnVjdG9yKFxuXHRcdEBJTGFuZ3VhZ2VNb2RlbHNTZXJ2aWNlIGxhbmd1YWdlTW9kZWxzU2VydmljZTogSUxhbmd1YWdlTW9kZWxzU2VydmljZSxcblx0XHRASUxvZ1NlcnZpY2UgbG9nU2VydmljZTogSUxvZ1NlcnZpY2UsXG5cdCkge1xuXHRcdHN1cGVyKGFycmF5cywge1xuXHRcdFx0Y29uZmlnS2V5OiBJbmxpbmVDaGF0Q29uZmlnS2V5cy5EZWZhdWx0TW9kZWwsXG5cdFx0XHRjb25maWdTZWN0aW9uSWQ6ICdpbmxpbmVDaGF0Jyxcblx0XHRcdGxvZ1ByZWZpeDogJ1tJbmxpbmVDaGF0RGVmYXVsdE1vZGVsXScsXG5cdFx0XHRmaWx0ZXI6IG1ldGFkYXRhID0+ICEhbWV0YWRhdGEuY2FwYWJpbGl0aWVzPy50b29sQ2FsbGluZyxcblx0XHR9LCBsYW5ndWFnZU1vZGVsc1NlcnZpY2UsIGxvZ1NlcnZpY2UpO1xuXHR9XG59XG5cblxuUmVnaXN0cnkuYXM8SUNvbmZpZ3VyYXRpb25SZWdpc3RyeT4oQ29uZmlndXJhdGlvbkV4dGVuc2lvbnMuQ29uZmlndXJhdGlvbikucmVnaXN0ZXJDb25maWd1cmF0aW9uKHtcblx0Li4ueyBpZDogJ2lubGluZUNoYXQnLCB0aXRsZTogbG9jYWxpemUoJ2lubGluZUNoYXRDb25maWd1cmF0aW9uVGl0bGUnLCAnSW5saW5lIENoYXQnKSwgb3JkZXI6IDMwLCB0eXBlOiAnb2JqZWN0JyB9LFxuXHRwcm9wZXJ0aWVzOiB7XG5cdFx0W0lubGluZUNoYXRDb25maWdLZXlzLkRlZmF1bHRNb2RlbF06IHtcblx0XHRcdGRlc2NyaXB0aW9uOiBsb2NhbGl6ZSgnaW5saW5lQ2hhdERlZmF1bHRNb2RlbERlc2NyaXB0aW9uJywgXCJTZWxlY3QgdGhlIGRlZmF1bHQgbGFuZ3VhZ2UgbW9kZWwgdG8gdXNlIGZvciBpbmxpbmUgY2hhdCBmcm9tIHRoZSBhdmFpbGFibGUgcHJvdmlkZXJzLiBNb2RlbCBuYW1lcyBtYXkgaW5jbHVkZSB0aGUgcHJvdmlkZXIgaW4gcGFyZW50aGVzZXMsIGZvciBleGFtcGxlICdDbGF1ZGUgSGFpa3UgNC41IChjb3BpbG90KScuXCIpLFxuXHRcdFx0dHlwZTogJ3N0cmluZycsXG5cdFx0XHRkZWZhdWx0OiAnJyxcblx0XHRcdG9yZGVyOiAxLFxuXHRcdFx0ZW51bTogSW5saW5lQ2hhdERlZmF1bHRNb2RlbC5tb2RlbElkcyxcblx0XHRcdGVudW1JdGVtTGFiZWxzOiBJbmxpbmVDaGF0RGVmYXVsdE1vZGVsLm1vZGVsTGFiZWxzLFxuXHRcdFx0bWFya2Rvd25FbnVtRGVzY3JpcHRpb25zOiBJbmxpbmVDaGF0RGVmYXVsdE1vZGVsLm1vZGVsRGVzY3JpcHRpb25zXG5cdFx0fVxuXHR9XG59KTtcbiJdLAogICJtYXBwaW5ncyI6ICI7Ozs7Ozs7Ozs7O0FBS0EsU0FBUyxnQkFBZ0I7QUFDekIsU0FBaUMsY0FBYywrQkFBK0I7QUFDOUUsU0FBUyxtQkFBbUI7QUFDNUIsU0FBUyxnQkFBZ0I7QUFDekIsU0FBUyw4QkFBOEI7QUFDdkMsU0FBUyw0QkFBNEI7QUFDckMsU0FBUywwQkFBMEIsZ0NBQWdDO0FBRW5FLE1BQU0sU0FBUyx5QkFBeUI7QUFFakMsSUFBTSx5QkFBTixjQUFxQyx5QkFBeUI7QUFBQSxFQU9wRSxZQUN5Qix1QkFDWCxZQUNaO0FBQ0QsVUFBTSxRQUFRO0FBQUEsTUFDYixXQUFXLHFCQUFxQjtBQUFBLE1BQ2hDLGlCQUFpQjtBQUFBLE1BQ2pCLFdBQVc7QUFBQSxNQUNYLFFBQVEsY0FBWSxDQUFDLENBQUMsU0FBUyxjQUFjO0FBQUEsSUFDOUMsR0FBRyx1QkFBdUIsVUFBVTtBQUFBLEVBQ3JDO0FBQ0Q7QUFsQmEsdUJBQ0ksS0FBSztBQURULHVCQUdJLFdBQVcsT0FBTztBQUh0Qix1QkFJSSxjQUFjLE9BQU87QUFKekIsdUJBS0ksb0JBQW9CLE9BQU87QUFML0IseUJBQU47QUFBQSxFQVFKO0FBQUEsRUFDQTtBQUFBLEdBVFU7QUFxQmIsU0FBUyxHQUEyQix3QkFBd0IsYUFBYSxFQUFFLHNCQUFzQjtBQUFBLEVBQ2hHLEdBQUcsRUFBRSxJQUFJLGNBQWMsT0FBTyxTQUFTLGdDQUFnQyxhQUFhLEdBQUcsT0FBTyxJQUFJLE1BQU0sU0FBUztBQUFBLEVBQ2pILFlBQVk7QUFBQSxJQUNYLENBQUMscUJBQXFCLFlBQVksR0FBRztBQUFBLE1BQ3BDLGFBQWEsU0FBUyxxQ0FBcUMsdUxBQXVMO0FBQUEsTUFDbFAsTUFBTTtBQUFBLE1BQ04sU0FBUztBQUFBLE1BQ1QsT0FBTztBQUFBLE1BQ1AsTUFBTSx1QkFBdUI7QUFBQSxNQUM3QixnQkFBZ0IsdUJBQXVCO0FBQUEsTUFDdkMsMEJBQTBCLHVCQUF1QjtBQUFBLElBQ2xEO0FBQUEsRUFDRDtBQUNELENBQUM7IiwKICAibmFtZXMiOiBbXQp9Cg==

@@ -1,0 +1,37 @@
+import { localize, localize2 } from "../../../../nls.js";
+import { Action2, registerAction2 } from "../../../../platform/actions/common/actions.js";
+import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
+import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
+import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
+import { InputMode } from "../../../../editor/common/inputMode.js";
+class ToggleOvertypeInsertMode extends Action2 {
+  constructor() {
+    super({
+      id: "editor.action.toggleOvertypeInsertMode",
+      title: {
+        ...localize2("toggleOvertypeInsertMode", "Toggle Overtype/Insert Mode"),
+        mnemonicTitle: localize({ key: "mitoggleOvertypeInsertMode", comment: ["&& denotes a mnemonic"] }, "&&Toggle Overtype/Insert Mode")
+      },
+      metadata: {
+        description: localize2("toggleOvertypeMode.description", "Toggle between overtype and insert mode")
+      },
+      keybinding: {
+        weight: KeybindingWeight.WorkbenchContrib,
+        primary: KeyCode.Insert,
+        mac: { primary: KeyMod.Alt | KeyMod.CtrlCmd | KeyCode.KeyO }
+      },
+      f1: true,
+      category: Categories.View
+    });
+  }
+  async run(accessor) {
+    const oldInputMode = InputMode.getInputMode();
+    const newInputMode = oldInputMode === "insert" ? "overtype" : "insert";
+    InputMode.setInputMode(newInputMode);
+  }
+}
+registerAction2(ToggleOvertypeInsertMode);
+export {
+  ToggleOvertypeInsertMode
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9jb250cmliL2NvZGVFZGl0b3IvYnJvd3Nlci90b2dnbGVPdmVydHlwZS50cyJdLAogICJzb3VyY2VzQ29udGVudCI6IFsiLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbiAqICBDb3B5cmlnaHQgKGMpIE1pY3Jvc29mdCBDb3Jwb3JhdGlvbi4gQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqICBMaWNlbnNlZCB1bmRlciB0aGUgTUlUIExpY2Vuc2UuIFNlZSBMaWNlbnNlLnR4dCBpbiB0aGUgcHJvamVjdCByb290IGZvciBsaWNlbnNlIGluZm9ybWF0aW9uLlxuICotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovXG5cbmltcG9ydCB7IGxvY2FsaXplLCBsb2NhbGl6ZTIgfSBmcm9tICcuLi8uLi8uLi8uLi9ubHMuanMnO1xuaW1wb3J0IHsgQWN0aW9uMiwgcmVnaXN0ZXJBY3Rpb24yIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vYWN0aW9ucy9jb21tb24vYWN0aW9ucy5qcyc7XG5pbXBvcnQgeyBDYXRlZ29yaWVzIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vYWN0aW9uL2NvbW1vbi9hY3Rpb25Db21tb25DYXRlZ29yaWVzLmpzJztcbmltcG9ydCB7IFNlcnZpY2VzQWNjZXNzb3IgfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS9pbnN0YW50aWF0aW9uL2NvbW1vbi9pbnN0YW50aWF0aW9uLmpzJztcbmltcG9ydCB7IEtleWJpbmRpbmdXZWlnaHQgfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS9rZXliaW5kaW5nL2NvbW1vbi9rZXliaW5kaW5nc1JlZ2lzdHJ5LmpzJztcbmltcG9ydCB7IEtleUNvZGUsIEtleU1vZCB9IGZyb20gJy4uLy4uLy4uLy4uL2Jhc2UvY29tbW9uL2tleUNvZGVzLmpzJztcbmltcG9ydCB7IElucHV0TW9kZSB9IGZyb20gJy4uLy4uLy4uLy4uL2VkaXRvci9jb21tb24vaW5wdXRNb2RlLmpzJztcblxuZXhwb3J0IGNsYXNzIFRvZ2dsZU92ZXJ0eXBlSW5zZXJ0TW9kZSBleHRlbmRzIEFjdGlvbjIge1xuXG5cdGNvbnN0cnVjdG9yKCkge1xuXHRcdHN1cGVyKHtcblx0XHRcdGlkOiAnZWRpdG9yLmFjdGlvbi50b2dnbGVPdmVydHlwZUluc2VydE1vZGUnLFxuXHRcdFx0dGl0bGU6IHtcblx0XHRcdFx0Li4ubG9jYWxpemUyKCd0b2dnbGVPdmVydHlwZUluc2VydE1vZGUnLCBcIlRvZ2dsZSBPdmVydHlwZS9JbnNlcnQgTW9kZVwiKSxcblx0XHRcdFx0bW5lbW9uaWNUaXRsZTogbG9jYWxpemUoeyBrZXk6ICdtaXRvZ2dsZU92ZXJ0eXBlSW5zZXJ0TW9kZScsIGNvbW1lbnQ6IFsnJiYgZGVub3RlcyBhIG1uZW1vbmljJ10gfSwgXCImJlRvZ2dsZSBPdmVydHlwZS9JbnNlcnQgTW9kZVwiKSxcblx0XHRcdH0sXG5cdFx0XHRtZXRhZGF0YToge1xuXHRcdFx0XHRkZXNjcmlwdGlvbjogbG9jYWxpemUyKCd0b2dnbGVPdmVydHlwZU1vZGUuZGVzY3JpcHRpb24nLCBcIlRvZ2dsZSBiZXR3ZWVuIG92ZXJ0eXBlIGFuZCBpbnNlcnQgbW9kZVwiKSxcblx0XHRcdH0sXG5cdFx0XHRrZXliaW5kaW5nOiB7XG5cdFx0XHRcdHdlaWdodDogS2V5YmluZGluZ1dlaWdodC5Xb3JrYmVuY2hDb250cmliLFxuXHRcdFx0XHRwcmltYXJ5OiBLZXlDb2RlLkluc2VydCxcblx0XHRcdFx0bWFjOiB7IHByaW1hcnk6IEtleU1vZC5BbHQgfCBLZXlNb2QuQ3RybENtZCB8IEtleUNvZGUuS2V5TyB9LFxuXHRcdFx0fSxcblx0XHRcdGYxOiB0cnVlLFxuXHRcdFx0Y2F0ZWdvcnk6IENhdGVnb3JpZXMuVmlld1xuXHRcdH0pO1xuXHR9XG5cblx0b3ZlcnJpZGUgYXN5bmMgcnVuKGFjY2Vzc29yOiBTZXJ2aWNlc0FjY2Vzc29yKTogUHJvbWlzZTx2b2lkPiB7XG5cdFx0Y29uc3Qgb2xkSW5wdXRNb2RlID0gSW5wdXRNb2RlLmdldElucHV0TW9kZSgpO1xuXHRcdGNvbnN0IG5ld0lucHV0TW9kZSA9IG9sZElucHV0TW9kZSA9PT0gJ2luc2VydCcgPyAnb3ZlcnR5cGUnIDogJ2luc2VydCc7XG5cdFx0SW5wdXRNb2RlLnNldElucHV0TW9kZShuZXdJbnB1dE1vZGUpO1xuXHR9XG59XG5cbnJlZ2lzdGVyQWN0aW9uMihUb2dnbGVPdmVydHlwZUluc2VydE1vZGUpO1xuIl0sCiAgIm1hcHBpbmdzIjogIkFBS0EsU0FBUyxVQUFVLGlCQUFpQjtBQUNwQyxTQUFTLFNBQVMsdUJBQXVCO0FBQ3pDLFNBQVMsa0JBQWtCO0FBRTNCLFNBQVMsd0JBQXdCO0FBQ2pDLFNBQVMsU0FBUyxjQUFjO0FBQ2hDLFNBQVMsaUJBQWlCO0FBRW5CLE1BQU0saUNBQWlDLFFBQVE7QUFBQSxFQUVyRCxjQUFjO0FBQ2IsVUFBTTtBQUFBLE1BQ0wsSUFBSTtBQUFBLE1BQ0osT0FBTztBQUFBLFFBQ04sR0FBRyxVQUFVLDRCQUE0Qiw2QkFBNkI7QUFBQSxRQUN0RSxlQUFlLFNBQVMsRUFBRSxLQUFLLDhCQUE4QixTQUFTLENBQUMsdUJBQXVCLEVBQUUsR0FBRywrQkFBK0I7QUFBQSxNQUNuSTtBQUFBLE1BQ0EsVUFBVTtBQUFBLFFBQ1QsYUFBYSxVQUFVLGtDQUFrQyx5Q0FBeUM7QUFBQSxNQUNuRztBQUFBLE1BQ0EsWUFBWTtBQUFBLFFBQ1gsUUFBUSxpQkFBaUI7QUFBQSxRQUN6QixTQUFTLFFBQVE7QUFBQSxRQUNqQixLQUFLLEVBQUUsU0FBUyxPQUFPLE1BQU0sT0FBTyxVQUFVLFFBQVEsS0FBSztBQUFBLE1BQzVEO0FBQUEsTUFDQSxJQUFJO0FBQUEsTUFDSixVQUFVLFdBQVc7QUFBQSxJQUN0QixDQUFDO0FBQUEsRUFDRjtBQUFBLEVBRUEsTUFBZSxJQUFJLFVBQTJDO0FBQzdELFVBQU0sZUFBZSxVQUFVLGFBQWE7QUFDNUMsVUFBTSxlQUFlLGlCQUFpQixXQUFXLGFBQWE7QUFDOUQsY0FBVSxhQUFhLFlBQVk7QUFBQSxFQUNwQztBQUNEO0FBRUEsZ0JBQWdCLHdCQUF3QjsiLAogICJuYW1lcyI6IFtdCn0K

@@ -1,0 +1,74 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { isHotReloadEnabled } from "../../../base/common/hotReload.js";
+import { autorunWithStore } from "../../../base/common/observable.js";
+import { IInstantiationService } from "../../instantiation/common/instantiation.js";
+function hotClassGetOriginalInstance(value) {
+  if (value instanceof BaseClass) {
+    return value._instance;
+  }
+  return value;
+}
+function wrapInHotClass0(clazz) {
+  return !isHotReloadEnabled() ? clazz.get() : createWrapper(clazz, BaseClass0);
+}
+class BaseClass {
+  constructor(instantiationService) {
+    this.instantiationService = instantiationService;
+  }
+  init(...params) {
+  }
+}
+function createWrapper(clazz, B) {
+  return class ReloadableWrapper extends B {
+    constructor() {
+      super(...arguments);
+      this._autorun = void 0;
+    }
+    init(...params) {
+      this._autorun = autorunWithStore((reader, store) => {
+        const clazz_ = clazz.read(reader);
+        this._instance = store.add(this.instantiationService.createInstance(clazz_, ...params));
+      });
+    }
+    dispose() {
+      this._autorun?.dispose();
+    }
+  };
+}
+let BaseClass0 = class extends BaseClass {
+  constructor(i) {
+    super(i);
+    this.init();
+  }
+};
+BaseClass0 = __decorateClass([
+  __decorateParam(0, IInstantiationService)
+], BaseClass0);
+function wrapInHotClass1(clazz) {
+  return !isHotReloadEnabled() ? clazz.get() : createWrapper(clazz, BaseClass1);
+}
+let BaseClass1 = class extends BaseClass {
+  constructor(param1, i) {
+    super(i);
+    this.init(param1);
+  }
+};
+BaseClass1 = __decorateClass([
+  __decorateParam(1, IInstantiationService)
+], BaseClass1);
+export {
+  hotClassGetOriginalInstance,
+  wrapInHotClass0,
+  wrapInHotClass1
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3BsYXRmb3JtL29ic2VydmFibGUvY29tbW9uL3dyYXBJbkhvdENsYXNzLnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICogIENvcHlyaWdodCAoYykgTWljcm9zb2Z0IENvcnBvcmF0aW9uLiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICogIExpY2Vuc2VkIHVuZGVyIHRoZSBNSVQgTGljZW5zZS4gU2VlIExpY2Vuc2UudHh0IGluIHRoZSBwcm9qZWN0IHJvb3QgZm9yIGxpY2Vuc2UgaW5mb3JtYXRpb24uXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cbmltcG9ydCB7IGlzSG90UmVsb2FkRW5hYmxlZCB9IGZyb20gJy4uLy4uLy4uL2Jhc2UvY29tbW9uL2hvdFJlbG9hZC5qcyc7XG5pbXBvcnQgeyBJRGlzcG9zYWJsZSB9IGZyb20gJy4uLy4uLy4uL2Jhc2UvY29tbW9uL2xpZmVjeWNsZS5qcyc7XG5pbXBvcnQgeyBhdXRvcnVuV2l0aFN0b3JlLCBJT2JzZXJ2YWJsZSB9IGZyb20gJy4uLy4uLy4uL2Jhc2UvY29tbW9uL29ic2VydmFibGUuanMnO1xuaW1wb3J0IHsgQnJhbmRlZFNlcnZpY2UsIElJbnN0YW50aWF0aW9uU2VydmljZSB9IGZyb20gJy4uLy4uL2luc3RhbnRpYXRpb24vY29tbW9uL2luc3RhbnRpYXRpb24uanMnO1xuXG5leHBvcnQgZnVuY3Rpb24gaG90Q2xhc3NHZXRPcmlnaW5hbEluc3RhbmNlPFQ+KHZhbHVlOiBUKTogVCB7XG5cdGlmICh2YWx1ZSBpbnN0YW5jZW9mIEJhc2VDbGFzcykge1xuXHRcdC8vIGVzbGludC1kaXNhYmxlLW5leHQtbGluZSBsb2NhbC9jb2RlLW5vLWFueS1jYXN0c1xuXHRcdHJldHVybiB2YWx1ZS5faW5zdGFuY2UgYXMgYW55O1xuXHR9XG5cdHJldHVybiB2YWx1ZTtcbn1cblxuLyoqXG4gKiBXcmFwIGEgY2xhc3MgaW4gYSByZWxvYWRhYmxlIHdyYXBwZXIuXG4gKiBXaGVuIHRoZSB3cmFwcGVyIGlzIGNyZWF0ZWQsIHRoZSBvcmlnaW5hbCBjbGFzcyBpcyBjcmVhdGVkLlxuICogV2hlbiB0aGUgb3JpZ2luYWwgY2xhc3MgY2hhbmdlcywgdGhlIGluc3RhbmNlIGlzIHJlLWNyZWF0ZWQuXG4qL1xuZXhwb3J0IGZ1bmN0aW9uIHdyYXBJbkhvdENsYXNzMDxUQXJncyBleHRlbmRzIEJyYW5kZWRTZXJ2aWNlW10+KGNsYXp6OiBJT2JzZXJ2YWJsZTxSZXN1bHQ8VEFyZ3M+Pik6IFJlc3VsdDxUQXJncz4ge1xuXHRyZXR1cm4gIWlzSG90UmVsb2FkRW5hYmxlZCgpID8gY2xhenouZ2V0KCkgOiBjcmVhdGVXcmFwcGVyKGNsYXp6LCBCYXNlQ2xhc3MwKTtcbn1cblxudHlwZSBSZXN1bHQ8VEFyZ3MgZXh0ZW5kcyBhbnlbXT4gPSBuZXcgKC4uLmFyZ3M6IFRBcmdzKSA9PiBJRGlzcG9zYWJsZTtcblxuY2xhc3MgQmFzZUNsYXNzIHtcblx0cHVibGljIF9pbnN0YW5jZTogdW5rbm93bjtcblxuXHRjb25zdHJ1Y3Rvcihcblx0XHRwdWJsaWMgcmVhZG9ubHkgaW5zdGFudGlhdGlvblNlcnZpY2U6IElJbnN0YW50aWF0aW9uU2VydmljZSxcblx0KSB7IH1cblxuXHRwdWJsaWMgaW5pdCguLi5wYXJhbXM6IGFueVtdKTogdm9pZCB7IH1cbn1cblxuZnVuY3Rpb24gY3JlYXRlV3JhcHBlcjxUIGV4dGVuZHMgYW55W10+KGNsYXp6OiBJT2JzZXJ2YWJsZTxhbnk+LCBCOiBuZXcgKC4uLmFyZ3M6IFQpID0+IEJhc2VDbGFzcykge1xuXHQvLyBlc2xpbnQtZGlzYWJsZS1uZXh0LWxpbmUgbG9jYWwvY29kZS1uby1hbnktY2FzdHNcblx0cmV0dXJuIChjbGFzcyBSZWxvYWRhYmxlV3JhcHBlciBleHRlbmRzIEIge1xuXHRcdHByaXZhdGUgX2F1dG9ydW46IElEaXNwb3NhYmxlIHwgdW5kZWZpbmVkID0gdW5kZWZpbmVkO1xuXG5cdFx0b3ZlcnJpZGUgaW5pdCguLi5wYXJhbXM6IGFueVtdKSB7XG5cdFx0XHR0aGlzLl9hdXRvcnVuID0gYXV0b3J1bldpdGhTdG9yZSgocmVhZGVyLCBzdG9yZSkgPT4ge1xuXHRcdFx0XHRjb25zdCBjbGF6el8gPSBjbGF6ei5yZWFkKHJlYWRlcik7XG5cdFx0XHRcdHRoaXMuX2luc3RhbmNlID0gc3RvcmUuYWRkKHRoaXMuaW5zdGFudGlhdGlvblNlcnZpY2UuY3JlYXRlSW5zdGFuY2UoY2xhenpfLCAuLi5wYXJhbXMpKTtcblx0XHRcdH0pO1xuXHRcdH1cblxuXHRcdGRpc3Bvc2UoKTogdm9pZCB7XG5cdFx0XHR0aGlzLl9hdXRvcnVuPy5kaXNwb3NlKCk7XG5cdFx0fVxuXHR9KSBhcyBhbnk7XG59XG5cbmNsYXNzIEJhc2VDbGFzczAgZXh0ZW5kcyBCYXNlQ2xhc3Mge1xuXHRjb25zdHJ1Y3RvcihASUluc3RhbnRpYXRpb25TZXJ2aWNlIGk6IElJbnN0YW50aWF0aW9uU2VydmljZSkgeyBzdXBlcihpKTsgdGhpcy5pbml0KCk7IH1cbn1cblxuLyoqXG4gKiBXcmFwIGEgY2xhc3MgaW4gYSByZWxvYWRhYmxlIHdyYXBwZXIuXG4gKiBXaGVuIHRoZSB3cmFwcGVyIGlzIGNyZWF0ZWQsIHRoZSBvcmlnaW5hbCBjbGFzcyBpcyBjcmVhdGVkLlxuICogV2hlbiB0aGUgb3JpZ2luYWwgY2xhc3MgY2hhbmdlcywgdGhlIGluc3RhbmNlIGlzIHJlLWNyZWF0ZWQuXG4qL1xuZXhwb3J0IGZ1bmN0aW9uIHdyYXBJbkhvdENsYXNzMTxUQXJncyBleHRlbmRzIFthbnksIC4uLkJyYW5kZWRTZXJ2aWNlW11dPihjbGF6ejogSU9ic2VydmFibGU8UmVzdWx0PFRBcmdzPj4pOiBSZXN1bHQ8VEFyZ3M+IHtcblx0cmV0dXJuICFpc0hvdFJlbG9hZEVuYWJsZWQoKSA/IGNsYXp6LmdldCgpIDogY3JlYXRlV3JhcHBlcihjbGF6eiwgQmFzZUNsYXNzMSk7XG59XG5cbmNsYXNzIEJhc2VDbGFzczEgZXh0ZW5kcyBCYXNlQ2xhc3Mge1xuXHRjb25zdHJ1Y3RvcihwYXJhbTE6IGFueSwgQElJbnN0YW50aWF0aW9uU2VydmljZSBpOiBJSW5zdGFudGlhdGlvblNlcnZpY2UsKSB7IHN1cGVyKGkpOyB0aGlzLmluaXQocGFyYW0xKTsgfVxufVxuIl0sCiAgIm1hcHBpbmdzIjogIjs7Ozs7Ozs7Ozs7QUFJQSxTQUFTLDBCQUEwQjtBQUVuQyxTQUFTLHdCQUFxQztBQUM5QyxTQUF5Qiw2QkFBNkI7QUFFL0MsU0FBUyw0QkFBK0IsT0FBYTtBQUMzRCxNQUFJLGlCQUFpQixXQUFXO0FBRS9CLFdBQU8sTUFBTTtBQUFBLEVBQ2Q7QUFDQSxTQUFPO0FBQ1I7QUFPTyxTQUFTLGdCQUFnRCxPQUFrRDtBQUNqSCxTQUFPLENBQUMsbUJBQW1CLElBQUksTUFBTSxJQUFJLElBQUksY0FBYyxPQUFPLFVBQVU7QUFDN0U7QUFJQSxNQUFNLFVBQVU7QUFBQSxFQUdmLFlBQ2lCLHNCQUNmO0FBRGU7QUFBQSxFQUNiO0FBQUEsRUFFRyxRQUFRLFFBQXFCO0FBQUEsRUFBRTtBQUN2QztBQUVBLFNBQVMsY0FBK0IsT0FBeUIsR0FBa0M7QUFFbEcsU0FBUSxNQUFNLDBCQUEwQixFQUFFO0FBQUEsSUFBbEM7QUFBQTtBQUNQLFdBQVEsV0FBb0M7QUFBQTtBQUFBLElBRW5DLFFBQVEsUUFBZTtBQUMvQixXQUFLLFdBQVcsaUJBQWlCLENBQUMsUUFBUSxVQUFVO0FBQ25ELGNBQU0sU0FBUyxNQUFNLEtBQUssTUFBTTtBQUNoQyxhQUFLLFlBQVksTUFBTSxJQUFJLEtBQUsscUJBQXFCLGVBQWUsUUFBUSxHQUFHLE1BQU0sQ0FBQztBQUFBLE1BQ3ZGLENBQUM7QUFBQSxJQUNGO0FBQUEsSUFFQSxVQUFnQjtBQUNmLFdBQUssVUFBVSxRQUFRO0FBQUEsSUFDeEI7QUFBQSxFQUNEO0FBQ0Q7QUFFQSxJQUFNLGFBQU4sY0FBeUIsVUFBVTtBQUFBLEVBQ2xDLFlBQW1DLEdBQTBCO0FBQUUsVUFBTSxDQUFDO0FBQUcsU0FBSyxLQUFLO0FBQUEsRUFBRztBQUN2RjtBQUZNLGFBQU47QUFBQSxFQUNjO0FBQUEsR0FEUjtBQVNDLFNBQVMsZ0JBQTBELE9BQWtEO0FBQzNILFNBQU8sQ0FBQyxtQkFBbUIsSUFBSSxNQUFNLElBQUksSUFBSSxjQUFjLE9BQU8sVUFBVTtBQUM3RTtBQUVBLElBQU0sYUFBTixjQUF5QixVQUFVO0FBQUEsRUFDbEMsWUFBWSxRQUFvQyxHQUEyQjtBQUFFLFVBQU0sQ0FBQztBQUFHLFNBQUssS0FBSyxNQUFNO0FBQUEsRUFBRztBQUMzRztBQUZNLGFBQU47QUFBQSxFQUMyQjtBQUFBLEdBRHJCOyIsCiAgIm5hbWVzIjogW10KfQo=

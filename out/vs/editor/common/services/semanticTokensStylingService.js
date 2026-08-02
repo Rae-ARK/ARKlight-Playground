@@ -1,0 +1,46 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { ILanguageService } from "../languages/language.js";
+import { IThemeService } from "../../../platform/theme/common/themeService.js";
+import { ILogService } from "../../../platform/log/common/log.js";
+import { SemanticTokensProviderStyling } from "./semanticTokensProviderStyling.js";
+import { ISemanticTokensStylingService } from "./semanticTokensStyling.js";
+import { InstantiationType, registerSingleton } from "../../../platform/instantiation/common/extensions.js";
+let SemanticTokensStylingService = class extends Disposable {
+  constructor(_themeService, _logService, _languageService) {
+    super();
+    this._themeService = _themeService;
+    this._logService = _logService;
+    this._languageService = _languageService;
+    this._caches = /* @__PURE__ */ new WeakMap();
+    this._register(this._themeService.onDidColorThemeChange(() => {
+      this._caches = /* @__PURE__ */ new WeakMap();
+    }));
+  }
+  getStyling(provider) {
+    if (!this._caches.has(provider)) {
+      this._caches.set(provider, new SemanticTokensProviderStyling(provider.getLegend(), this._themeService, this._languageService, this._logService));
+    }
+    return this._caches.get(provider);
+  }
+};
+SemanticTokensStylingService = __decorateClass([
+  __decorateParam(0, IThemeService),
+  __decorateParam(1, ILogService),
+  __decorateParam(2, ILanguageService)
+], SemanticTokensStylingService);
+registerSingleton(ISemanticTokensStylingService, SemanticTokensStylingService, InstantiationType.Delayed);
+export {
+  SemanticTokensStylingService
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL2VkaXRvci9jb21tb24vc2VydmljZXMvc2VtYW50aWNUb2tlbnNTdHlsaW5nU2VydmljZS50cyJdLAogICJzb3VyY2VzQ29udGVudCI6IFsiLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbiAqICBDb3B5cmlnaHQgKGMpIE1pY3Jvc29mdCBDb3Jwb3JhdGlvbi4gQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqICBMaWNlbnNlZCB1bmRlciB0aGUgTUlUIExpY2Vuc2UuIFNlZSBMaWNlbnNlLnR4dCBpbiB0aGUgcHJvamVjdCByb290IGZvciBsaWNlbnNlIGluZm9ybWF0aW9uLlxuICotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovXG5cbmltcG9ydCB7IERpc3Bvc2FibGUgfSBmcm9tICcuLi8uLi8uLi9iYXNlL2NvbW1vbi9saWZlY3ljbGUuanMnO1xuaW1wb3J0IHsgSUxhbmd1YWdlU2VydmljZSB9IGZyb20gJy4uL2xhbmd1YWdlcy9sYW5ndWFnZS5qcyc7XG5pbXBvcnQgeyBEb2N1bWVudFRva2Vuc1Byb3ZpZGVyIH0gZnJvbSAnLi9tb2RlbC5qcyc7XG5pbXBvcnQgeyBJVGhlbWVTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vcGxhdGZvcm0vdGhlbWUvY29tbW9uL3RoZW1lU2VydmljZS5qcyc7XG5pbXBvcnQgeyBJTG9nU2VydmljZSB9IGZyb20gJy4uLy4uLy4uL3BsYXRmb3JtL2xvZy9jb21tb24vbG9nLmpzJztcbmltcG9ydCB7IFNlbWFudGljVG9rZW5zUHJvdmlkZXJTdHlsaW5nIH0gZnJvbSAnLi9zZW1hbnRpY1Rva2Vuc1Byb3ZpZGVyU3R5bGluZy5qcyc7XG5pbXBvcnQgeyBJU2VtYW50aWNUb2tlbnNTdHlsaW5nU2VydmljZSB9IGZyb20gJy4vc2VtYW50aWNUb2tlbnNTdHlsaW5nLmpzJztcbmltcG9ydCB7IEluc3RhbnRpYXRpb25UeXBlLCByZWdpc3RlclNpbmdsZXRvbiB9IGZyb20gJy4uLy4uLy4uL3BsYXRmb3JtL2luc3RhbnRpYXRpb24vY29tbW9uL2V4dGVuc2lvbnMuanMnO1xuXG5leHBvcnQgY2xhc3MgU2VtYW50aWNUb2tlbnNTdHlsaW5nU2VydmljZSBleHRlbmRzIERpc3Bvc2FibGUgaW1wbGVtZW50cyBJU2VtYW50aWNUb2tlbnNTdHlsaW5nU2VydmljZSB7XG5cblx0cHVibGljIF9zZXJ2aWNlQnJhbmQ6IHVuZGVmaW5lZDtcblxuXHRwcml2YXRlIF9jYWNoZXM6IFdlYWtNYXA8RG9jdW1lbnRUb2tlbnNQcm92aWRlciwgU2VtYW50aWNUb2tlbnNQcm92aWRlclN0eWxpbmc+O1xuXG5cdGNvbnN0cnVjdG9yKFxuXHRcdEBJVGhlbWVTZXJ2aWNlIHByaXZhdGUgcmVhZG9ubHkgX3RoZW1lU2VydmljZTogSVRoZW1lU2VydmljZSxcblx0XHRASUxvZ1NlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBfbG9nU2VydmljZTogSUxvZ1NlcnZpY2UsXG5cdFx0QElMYW5ndWFnZVNlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBfbGFuZ3VhZ2VTZXJ2aWNlOiBJTGFuZ3VhZ2VTZXJ2aWNlLFxuXHQpIHtcblx0XHRzdXBlcigpO1xuXHRcdHRoaXMuX2NhY2hlcyA9IG5ldyBXZWFrTWFwPERvY3VtZW50VG9rZW5zUHJvdmlkZXIsIFNlbWFudGljVG9rZW5zUHJvdmlkZXJTdHlsaW5nPigpO1xuXHRcdHRoaXMuX3JlZ2lzdGVyKHRoaXMuX3RoZW1lU2VydmljZS5vbkRpZENvbG9yVGhlbWVDaGFuZ2UoKCkgPT4ge1xuXHRcdFx0dGhpcy5fY2FjaGVzID0gbmV3IFdlYWtNYXA8RG9jdW1lbnRUb2tlbnNQcm92aWRlciwgU2VtYW50aWNUb2tlbnNQcm92aWRlclN0eWxpbmc+KCk7XG5cdFx0fSkpO1xuXHR9XG5cblx0cHVibGljIGdldFN0eWxpbmcocHJvdmlkZXI6IERvY3VtZW50VG9rZW5zUHJvdmlkZXIpOiBTZW1hbnRpY1Rva2Vuc1Byb3ZpZGVyU3R5bGluZyB7XG5cdFx0aWYgKCF0aGlzLl9jYWNoZXMuaGFzKHByb3ZpZGVyKSkge1xuXHRcdFx0dGhpcy5fY2FjaGVzLnNldChwcm92aWRlciwgbmV3IFNlbWFudGljVG9rZW5zUHJvdmlkZXJTdHlsaW5nKHByb3ZpZGVyLmdldExlZ2VuZCgpLCB0aGlzLl90aGVtZVNlcnZpY2UsIHRoaXMuX2xhbmd1YWdlU2VydmljZSwgdGhpcy5fbG9nU2VydmljZSkpO1xuXHRcdH1cblx0XHRyZXR1cm4gdGhpcy5fY2FjaGVzLmdldChwcm92aWRlcikhO1xuXHR9XG59XG5cbnJlZ2lzdGVyU2luZ2xldG9uKElTZW1hbnRpY1Rva2Vuc1N0eWxpbmdTZXJ2aWNlLCBTZW1hbnRpY1Rva2Vuc1N0eWxpbmdTZXJ2aWNlLCBJbnN0YW50aWF0aW9uVHlwZS5EZWxheWVkKTtcbiJdLAogICJtYXBwaW5ncyI6ICI7Ozs7Ozs7Ozs7O0FBS0EsU0FBUyxrQkFBa0I7QUFDM0IsU0FBUyx3QkFBd0I7QUFFakMsU0FBUyxxQkFBcUI7QUFDOUIsU0FBUyxtQkFBbUI7QUFDNUIsU0FBUyxxQ0FBcUM7QUFDOUMsU0FBUyxxQ0FBcUM7QUFDOUMsU0FBUyxtQkFBbUIseUJBQXlCO0FBRTlDLElBQU0sK0JBQU4sY0FBMkMsV0FBb0Q7QUFBQSxFQU1yRyxZQUNpQyxlQUNGLGFBQ0ssa0JBQ2xDO0FBQ0QsVUFBTTtBQUowQjtBQUNGO0FBQ0s7QUFHbkMsU0FBSyxVQUFVLG9CQUFJLFFBQStEO0FBQ2xGLFNBQUssVUFBVSxLQUFLLGNBQWMsc0JBQXNCLE1BQU07QUFDN0QsV0FBSyxVQUFVLG9CQUFJLFFBQStEO0FBQUEsSUFDbkYsQ0FBQyxDQUFDO0FBQUEsRUFDSDtBQUFBLEVBRU8sV0FBVyxVQUFpRTtBQUNsRixRQUFJLENBQUMsS0FBSyxRQUFRLElBQUksUUFBUSxHQUFHO0FBQ2hDLFdBQUssUUFBUSxJQUFJLFVBQVUsSUFBSSw4QkFBOEIsU0FBUyxVQUFVLEdBQUcsS0FBSyxlQUFlLEtBQUssa0JBQWtCLEtBQUssV0FBVyxDQUFDO0FBQUEsSUFDaEo7QUFDQSxXQUFPLEtBQUssUUFBUSxJQUFJLFFBQVE7QUFBQSxFQUNqQztBQUNEO0FBeEJhLCtCQUFOO0FBQUEsRUFPSjtBQUFBLEVBQ0E7QUFBQSxFQUNBO0FBQUEsR0FUVTtBQTBCYixrQkFBa0IsK0JBQStCLDhCQUE4QixrQkFBa0IsT0FBTzsiLAogICJuYW1lcyI6IFtdCn0K

@@ -1,0 +1,63 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { localize } from "../../../../nls.js";
+import { randomPath } from "../../../../base/common/extpath.js";
+import { Schemas } from "../../../../base/common/network.js";
+import { URI } from "../../../../base/common/uri.js";
+import { IFileService } from "../../../../platform/files/common/files.js";
+import { InstantiationType, registerSingleton } from "../../../../platform/instantiation/common/extensions.js";
+import { INativeHostService } from "../../../../platform/native/common/native.js";
+import { IWorkspaceTrustRequestService } from "../../../../platform/workspace/common/workspaceTrust.js";
+import { INativeWorkbenchEnvironmentService } from "../../environment/electron-browser/environmentService.js";
+import { IElevatedFileService } from "../common/elevatedFileService.js";
+import { isWindows } from "../../../../base/common/platform.js";
+import { ILabelService } from "../../../../platform/label/common/label.js";
+let NativeElevatedFileService = class {
+  constructor(nativeHostService, fileService, environmentService, workspaceTrustRequestService, labelService) {
+    this.nativeHostService = nativeHostService;
+    this.fileService = fileService;
+    this.environmentService = environmentService;
+    this.workspaceTrustRequestService = workspaceTrustRequestService;
+    this.labelService = labelService;
+  }
+  isSupported(resource) {
+    return resource.scheme === Schemas.file;
+  }
+  async writeFileElevated(resource, value, options) {
+    const trusted = await this.workspaceTrustRequestService.requestWorkspaceTrust({
+      message: isWindows ? localize("fileNotTrustedMessageWindows", "You are about to save '{0}' as admin.", this.labelService.getUriLabel(resource)) : localize("fileNotTrustedMessagePosix", "You are about to save '{0}' as super user.", this.labelService.getUriLabel(resource))
+    });
+    if (!trusted) {
+      throw new Error(localize("fileNotTrusted", "Workspace is not trusted."));
+    }
+    const source = URI.file(randomPath(this.environmentService.userDataPath, "code-elevated"));
+    try {
+      await this.fileService.writeFile(source, value, options);
+      await this.nativeHostService.writeElevated(source, resource, options);
+    } finally {
+      await this.fileService.del(source);
+    }
+    return this.fileService.resolve(resource, { resolveMetadata: true });
+  }
+};
+NativeElevatedFileService = __decorateClass([
+  __decorateParam(0, INativeHostService),
+  __decorateParam(1, IFileService),
+  __decorateParam(2, INativeWorkbenchEnvironmentService),
+  __decorateParam(3, IWorkspaceTrustRequestService),
+  __decorateParam(4, ILabelService)
+], NativeElevatedFileService);
+registerSingleton(IElevatedFileService, NativeElevatedFileService, InstantiationType.Delayed);
+export {
+  NativeElevatedFileService
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9zZXJ2aWNlcy9maWxlcy9lbGVjdHJvbi1icm93c2VyL2VsZXZhdGVkRmlsZVNlcnZpY2UudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbIi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4gKiAgQ29weXJpZ2h0IChjKSBNaWNyb3NvZnQgQ29ycG9yYXRpb24uIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKiAgTGljZW5zZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgTGljZW5zZS50eHQgaW4gdGhlIHByb2plY3Qgcm9vdCBmb3IgbGljZW5zZSBpbmZvcm1hdGlvbi5cbiAqLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qL1xuXG5pbXBvcnQgeyBsb2NhbGl6ZSB9IGZyb20gJy4uLy4uLy4uLy4uL25scy5qcyc7XG5pbXBvcnQgeyBWU0J1ZmZlciwgVlNCdWZmZXJSZWFkYWJsZSwgVlNCdWZmZXJSZWFkYWJsZVN0cmVhbSB9IGZyb20gJy4uLy4uLy4uLy4uL2Jhc2UvY29tbW9uL2J1ZmZlci5qcyc7XG5pbXBvcnQgeyByYW5kb21QYXRoIH0gZnJvbSAnLi4vLi4vLi4vLi4vYmFzZS9jb21tb24vZXh0cGF0aC5qcyc7XG5pbXBvcnQgeyBTY2hlbWFzIH0gZnJvbSAnLi4vLi4vLi4vLi4vYmFzZS9jb21tb24vbmV0d29yay5qcyc7XG5pbXBvcnQgeyBVUkkgfSBmcm9tICcuLi8uLi8uLi8uLi9iYXNlL2NvbW1vbi91cmkuanMnO1xuaW1wb3J0IHsgSUZpbGVTZXJ2aWNlLCBJRmlsZVN0YXRXaXRoTWV0YWRhdGEsIElXcml0ZUZpbGVPcHRpb25zIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vZmlsZXMvY29tbW9uL2ZpbGVzLmpzJztcbmltcG9ydCB7IEluc3RhbnRpYXRpb25UeXBlLCByZWdpc3RlclNpbmdsZXRvbiB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2luc3RhbnRpYXRpb24vY29tbW9uL2V4dGVuc2lvbnMuanMnO1xuaW1wb3J0IHsgSU5hdGl2ZUhvc3RTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vbmF0aXZlL2NvbW1vbi9uYXRpdmUuanMnO1xuaW1wb3J0IHsgSVdvcmtzcGFjZVRydXN0UmVxdWVzdFNlcnZpY2UgfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS93b3Jrc3BhY2UvY29tbW9uL3dvcmtzcGFjZVRydXN0LmpzJztcbmltcG9ydCB7IElOYXRpdmVXb3JrYmVuY2hFbnZpcm9ubWVudFNlcnZpY2UgfSBmcm9tICcuLi8uLi9lbnZpcm9ubWVudC9lbGVjdHJvbi1icm93c2VyL2Vudmlyb25tZW50U2VydmljZS5qcyc7XG5pbXBvcnQgeyBJRWxldmF0ZWRGaWxlU2VydmljZSB9IGZyb20gJy4uL2NvbW1vbi9lbGV2YXRlZEZpbGVTZXJ2aWNlLmpzJztcbmltcG9ydCB7IGlzV2luZG93cyB9IGZyb20gJy4uLy4uLy4uLy4uL2Jhc2UvY29tbW9uL3BsYXRmb3JtLmpzJztcbmltcG9ydCB7IElMYWJlbFNlcnZpY2UgfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS9sYWJlbC9jb21tb24vbGFiZWwuanMnO1xuZXhwb3J0IGNsYXNzIE5hdGl2ZUVsZXZhdGVkRmlsZVNlcnZpY2UgaW1wbGVtZW50cyBJRWxldmF0ZWRGaWxlU2VydmljZSB7XG5cblx0cmVhZG9ubHkgX3NlcnZpY2VCcmFuZDogdW5kZWZpbmVkO1xuXG5cdGNvbnN0cnVjdG9yKFxuXHRcdEBJTmF0aXZlSG9zdFNlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBuYXRpdmVIb3N0U2VydmljZTogSU5hdGl2ZUhvc3RTZXJ2aWNlLFxuXHRcdEBJRmlsZVNlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBmaWxlU2VydmljZTogSUZpbGVTZXJ2aWNlLFxuXHRcdEBJTmF0aXZlV29ya2JlbmNoRW52aXJvbm1lbnRTZXJ2aWNlIHByaXZhdGUgcmVhZG9ubHkgZW52aXJvbm1lbnRTZXJ2aWNlOiBJTmF0aXZlV29ya2JlbmNoRW52aXJvbm1lbnRTZXJ2aWNlLFxuXHRcdEBJV29ya3NwYWNlVHJ1c3RSZXF1ZXN0U2VydmljZSBwcml2YXRlIHJlYWRvbmx5IHdvcmtzcGFjZVRydXN0UmVxdWVzdFNlcnZpY2U6IElXb3Jrc3BhY2VUcnVzdFJlcXVlc3RTZXJ2aWNlLFxuXHRcdEBJTGFiZWxTZXJ2aWNlIHByaXZhdGUgcmVhZG9ubHkgbGFiZWxTZXJ2aWNlOiBJTGFiZWxTZXJ2aWNlXG5cdCkgeyB9XG5cblx0aXNTdXBwb3J0ZWQocmVzb3VyY2U6IFVSSSk6IGJvb2xlYW4ge1xuXHRcdC8vIFNhdmluZyBlbGV2YXRlZCBpcyBjdXJyZW50bHkgb25seSBzdXBwb3J0ZWQgZm9yIGxvY2FsXG5cdFx0Ly8gZmlsZXMgZm9yIGFzIGxvbmcgYXMgd2UgaGF2ZSBubyBnZW5lcmljIHN1cHBvcnQgZnJvbVxuXHRcdC8vIHRoZSBmaWxlIHNlcnZpY2Vcblx0XHQvLyAoaHR0cHM6Ly9naXRodWIuY29tL21pY3Jvc29mdC92c2NvZGUvaXNzdWVzLzQ4NjU5KVxuXHRcdHJldHVybiByZXNvdXJjZS5zY2hlbWUgPT09IFNjaGVtYXMuZmlsZTtcblx0fVxuXG5cdGFzeW5jIHdyaXRlRmlsZUVsZXZhdGVkKHJlc291cmNlOiBVUkksIHZhbHVlOiBWU0J1ZmZlciB8IFZTQnVmZmVyUmVhZGFibGUgfCBWU0J1ZmZlclJlYWRhYmxlU3RyZWFtLCBvcHRpb25zPzogSVdyaXRlRmlsZU9wdGlvbnMpOiBQcm9taXNlPElGaWxlU3RhdFdpdGhNZXRhZGF0YT4ge1xuXHRcdGNvbnN0IHRydXN0ZWQgPSBhd2FpdCB0aGlzLndvcmtzcGFjZVRydXN0UmVxdWVzdFNlcnZpY2UucmVxdWVzdFdvcmtzcGFjZVRydXN0KHtcblx0XHRcdG1lc3NhZ2U6IGlzV2luZG93cyA/IGxvY2FsaXplKCdmaWxlTm90VHJ1c3RlZE1lc3NhZ2VXaW5kb3dzJywgXCJZb3UgYXJlIGFib3V0IHRvIHNhdmUgJ3swfScgYXMgYWRtaW4uXCIsIHRoaXMubGFiZWxTZXJ2aWNlLmdldFVyaUxhYmVsKHJlc291cmNlKSkgOiBsb2NhbGl6ZSgnZmlsZU5vdFRydXN0ZWRNZXNzYWdlUG9zaXgnLCBcIllvdSBhcmUgYWJvdXQgdG8gc2F2ZSAnezB9JyBhcyBzdXBlciB1c2VyLlwiLCB0aGlzLmxhYmVsU2VydmljZS5nZXRVcmlMYWJlbChyZXNvdXJjZSkpLFxuXHRcdH0pO1xuXHRcdGlmICghdHJ1c3RlZCkge1xuXHRcdFx0dGhyb3cgbmV3IEVycm9yKGxvY2FsaXplKCdmaWxlTm90VHJ1c3RlZCcsIFwiV29ya3NwYWNlIGlzIG5vdCB0cnVzdGVkLlwiKSk7XG5cdFx0fVxuXG5cdFx0Y29uc3Qgc291cmNlID0gVVJJLmZpbGUocmFuZG9tUGF0aCh0aGlzLmVudmlyb25tZW50U2VydmljZS51c2VyRGF0YVBhdGgsICdjb2RlLWVsZXZhdGVkJykpO1xuXHRcdHRyeSB7XG5cdFx0XHQvLyB3cml0ZSBpbnRvIGEgdG1wIGZpbGUgZmlyc3Rcblx0XHRcdGF3YWl0IHRoaXMuZmlsZVNlcnZpY2Uud3JpdGVGaWxlKHNvdXJjZSwgdmFsdWUsIG9wdGlvbnMpO1xuXG5cdFx0XHQvLyB0aGVuIHN1ZG8gcHJvbXB0IGNvcHlcblx0XHRcdGF3YWl0IHRoaXMubmF0aXZlSG9zdFNlcnZpY2Uud3JpdGVFbGV2YXRlZChzb3VyY2UsIHJlc291cmNlLCBvcHRpb25zKTtcblx0XHR9IGZpbmFsbHkge1xuXG5cdFx0XHQvLyBjbGVhbiB1cFxuXHRcdFx0YXdhaXQgdGhpcy5maWxlU2VydmljZS5kZWwoc291cmNlKTtcblx0XHR9XG5cblx0XHRyZXR1cm4gdGhpcy5maWxlU2VydmljZS5yZXNvbHZlKHJlc291cmNlLCB7IHJlc29sdmVNZXRhZGF0YTogdHJ1ZSB9KTtcblx0fVxufVxuXG5yZWdpc3RlclNpbmdsZXRvbihJRWxldmF0ZWRGaWxlU2VydmljZSwgTmF0aXZlRWxldmF0ZWRGaWxlU2VydmljZSwgSW5zdGFudGlhdGlvblR5cGUuRGVsYXllZCk7XG4iXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7OztBQUtBLFNBQVMsZ0JBQWdCO0FBRXpCLFNBQVMsa0JBQWtCO0FBQzNCLFNBQVMsZUFBZTtBQUN4QixTQUFTLFdBQVc7QUFDcEIsU0FBUyxvQkFBOEQ7QUFDdkUsU0FBUyxtQkFBbUIseUJBQXlCO0FBQ3JELFNBQVMsMEJBQTBCO0FBQ25DLFNBQVMscUNBQXFDO0FBQzlDLFNBQVMsMENBQTBDO0FBQ25ELFNBQVMsNEJBQTRCO0FBQ3JDLFNBQVMsaUJBQWlCO0FBQzFCLFNBQVMscUJBQXFCO0FBQ3ZCLElBQU0sNEJBQU4sTUFBZ0U7QUFBQSxFQUl0RSxZQUNzQyxtQkFDTixhQUNzQixvQkFDTCw4QkFDaEIsY0FDL0I7QUFMb0M7QUFDTjtBQUNzQjtBQUNMO0FBQ2hCO0FBQUEsRUFDN0I7QUFBQSxFQUVKLFlBQVksVUFBd0I7QUFLbkMsV0FBTyxTQUFTLFdBQVcsUUFBUTtBQUFBLEVBQ3BDO0FBQUEsRUFFQSxNQUFNLGtCQUFrQixVQUFlLE9BQTZELFNBQTZEO0FBQ2hLLFVBQU0sVUFBVSxNQUFNLEtBQUssNkJBQTZCLHNCQUFzQjtBQUFBLE1BQzdFLFNBQVMsWUFBWSxTQUFTLGdDQUFnQyx5Q0FBeUMsS0FBSyxhQUFhLFlBQVksUUFBUSxDQUFDLElBQUksU0FBUyw4QkFBOEIsOENBQThDLEtBQUssYUFBYSxZQUFZLFFBQVEsQ0FBQztBQUFBLElBQy9RLENBQUM7QUFDRCxRQUFJLENBQUMsU0FBUztBQUNiLFlBQU0sSUFBSSxNQUFNLFNBQVMsa0JBQWtCLDJCQUEyQixDQUFDO0FBQUEsSUFDeEU7QUFFQSxVQUFNLFNBQVMsSUFBSSxLQUFLLFdBQVcsS0FBSyxtQkFBbUIsY0FBYyxlQUFlLENBQUM7QUFDekYsUUFBSTtBQUVILFlBQU0sS0FBSyxZQUFZLFVBQVUsUUFBUSxPQUFPLE9BQU87QUFHdkQsWUFBTSxLQUFLLGtCQUFrQixjQUFjLFFBQVEsVUFBVSxPQUFPO0FBQUEsSUFDckUsVUFBRTtBQUdELFlBQU0sS0FBSyxZQUFZLElBQUksTUFBTTtBQUFBLElBQ2xDO0FBRUEsV0FBTyxLQUFLLFlBQVksUUFBUSxVQUFVLEVBQUUsaUJBQWlCLEtBQUssQ0FBQztBQUFBLEVBQ3BFO0FBQ0Q7QUEzQ2EsNEJBQU47QUFBQSxFQUtKO0FBQUEsRUFDQTtBQUFBLEVBQ0E7QUFBQSxFQUNBO0FBQUEsRUFDQTtBQUFBLEdBVFU7QUE2Q2Isa0JBQWtCLHNCQUFzQiwyQkFBMkIsa0JBQWtCLE9BQU87IiwKICAibmFtZXMiOiBbXQp9Cg==

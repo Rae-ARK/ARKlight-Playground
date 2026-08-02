@@ -1,0 +1,32 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { ContextKeyExpr, IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+let Breakpoints = class {
+  constructor(breakpointContribution, contextKeyService) {
+    this.breakpointContribution = breakpointContribution;
+    this.contextKeyService = contextKeyService;
+    this.breakpointsWhen = typeof breakpointContribution.when === "string" ? ContextKeyExpr.deserialize(breakpointContribution.when) : void 0;
+  }
+  get language() {
+    return this.breakpointContribution.language;
+  }
+  get enabled() {
+    return !this.breakpointsWhen || this.contextKeyService.contextMatchesRules(this.breakpointsWhen);
+  }
+};
+Breakpoints = __decorateClass([
+  __decorateParam(1, IContextKeyService)
+], Breakpoints);
+export {
+  Breakpoints
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9jb250cmliL2RlYnVnL2NvbW1vbi9icmVha3BvaW50cy50cyJdLAogICJzb3VyY2VzQ29udGVudCI6IFsiLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbiAqICBDb3B5cmlnaHQgKGMpIE1pY3Jvc29mdCBDb3Jwb3JhdGlvbi4gQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqICBMaWNlbnNlZCB1bmRlciB0aGUgTUlUIExpY2Vuc2UuIFNlZSBMaWNlbnNlLnR4dCBpbiB0aGUgcHJvamVjdCByb290IGZvciBsaWNlbnNlIGluZm9ybWF0aW9uLlxuICotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovXG5cbmltcG9ydCB7IENvbnRleHRLZXlFeHByLCBDb250ZXh0S2V5RXhwcmVzc2lvbiwgSUNvbnRleHRLZXlTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vY29udGV4dGtleS9jb21tb24vY29udGV4dGtleS5qcyc7XG5pbXBvcnQgeyBJQnJlYWtwb2ludENvbnRyaWJ1dGlvbiB9IGZyb20gJy4vZGVidWcuanMnO1xuXG5leHBvcnQgY2xhc3MgQnJlYWtwb2ludHMge1xuXG5cdHByaXZhdGUgYnJlYWtwb2ludHNXaGVuOiBDb250ZXh0S2V5RXhwcmVzc2lvbiB8IHVuZGVmaW5lZDtcblxuXHRjb25zdHJ1Y3Rvcihcblx0XHRwcml2YXRlIHJlYWRvbmx5IGJyZWFrcG9pbnRDb250cmlidXRpb246IElCcmVha3BvaW50Q29udHJpYnV0aW9uLFxuXHRcdEBJQ29udGV4dEtleVNlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBjb250ZXh0S2V5U2VydmljZTogSUNvbnRleHRLZXlTZXJ2aWNlLFxuXHQpIHtcblx0XHR0aGlzLmJyZWFrcG9pbnRzV2hlbiA9IHR5cGVvZiBicmVha3BvaW50Q29udHJpYnV0aW9uLndoZW4gPT09ICdzdHJpbmcnID8gQ29udGV4dEtleUV4cHIuZGVzZXJpYWxpemUoYnJlYWtwb2ludENvbnRyaWJ1dGlvbi53aGVuKSA6IHVuZGVmaW5lZDtcblx0fVxuXG5cdGdldCBsYW5ndWFnZSgpOiBzdHJpbmcge1xuXHRcdHJldHVybiB0aGlzLmJyZWFrcG9pbnRDb250cmlidXRpb24ubGFuZ3VhZ2U7XG5cdH1cblxuXHRnZXQgZW5hYmxlZCgpOiBib29sZWFuIHtcblx0XHRyZXR1cm4gIXRoaXMuYnJlYWtwb2ludHNXaGVuIHx8IHRoaXMuY29udGV4dEtleVNlcnZpY2UuY29udGV4dE1hdGNoZXNSdWxlcyh0aGlzLmJyZWFrcG9pbnRzV2hlbik7XG5cdH1cbn1cbiJdLAogICJtYXBwaW5ncyI6ICI7Ozs7Ozs7Ozs7O0FBS0EsU0FBUyxnQkFBc0MsMEJBQTBCO0FBR2xFLElBQU0sY0FBTixNQUFrQjtBQUFBLEVBSXhCLFlBQ2tCLHdCQUNvQixtQkFDcEM7QUFGZ0I7QUFDb0I7QUFFckMsU0FBSyxrQkFBa0IsT0FBTyx1QkFBdUIsU0FBUyxXQUFXLGVBQWUsWUFBWSx1QkFBdUIsSUFBSSxJQUFJO0FBQUEsRUFDcEk7QUFBQSxFQUVBLElBQUksV0FBbUI7QUFDdEIsV0FBTyxLQUFLLHVCQUF1QjtBQUFBLEVBQ3BDO0FBQUEsRUFFQSxJQUFJLFVBQW1CO0FBQ3RCLFdBQU8sQ0FBQyxLQUFLLG1CQUFtQixLQUFLLGtCQUFrQixvQkFBb0IsS0FBSyxlQUFlO0FBQUEsRUFDaEc7QUFDRDtBQWxCYSxjQUFOO0FBQUEsRUFNSjtBQUFBLEdBTlU7IiwKICAibmFtZXMiOiBbXQp9Cg==

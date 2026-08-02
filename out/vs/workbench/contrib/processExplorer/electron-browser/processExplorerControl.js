@@ -1,0 +1,46 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
+import { ICommandService } from "../../../../platform/commands/common/commands.js";
+import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { INativeHostService } from "../../../../platform/native/common/native.js";
+import { IProcessService } from "../../../../platform/process/common/process.js";
+import { IProductService } from "../../../../platform/product/common/productService.js";
+import { ProcessExplorerControl } from "../browser/processExplorerControl.js";
+let NativeProcessExplorerControl = class extends ProcessExplorerControl {
+  constructor(container, instantiationService, productService, contextMenuService, nativeHostService, commandService, processService, clipboardService) {
+    super(instantiationService, productService, contextMenuService, commandService, clipboardService);
+    this.nativeHostService = nativeHostService;
+    this.processService = processService;
+    this.create(container);
+  }
+  killProcess(pid, signal) {
+    return this.nativeHostService.killProcess(pid, signal);
+  }
+  resolveProcesses() {
+    return this.processService.resolveProcesses();
+  }
+};
+NativeProcessExplorerControl = __decorateClass([
+  __decorateParam(1, IInstantiationService),
+  __decorateParam(2, IProductService),
+  __decorateParam(3, IContextMenuService),
+  __decorateParam(4, INativeHostService),
+  __decorateParam(5, ICommandService),
+  __decorateParam(6, IProcessService),
+  __decorateParam(7, IClipboardService)
+], NativeProcessExplorerControl);
+export {
+  NativeProcessExplorerControl
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9jb250cmliL3Byb2Nlc3NFeHBsb3Jlci9lbGVjdHJvbi1icm93c2VyL3Byb2Nlc3NFeHBsb3JlckNvbnRyb2wudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbIi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4gKiAgQ29weXJpZ2h0IChjKSBNaWNyb3NvZnQgQ29ycG9yYXRpb24uIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKiAgTGljZW5zZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgTGljZW5zZS50eHQgaW4gdGhlIHByb2plY3Qgcm9vdCBmb3IgbGljZW5zZSBpbmZvcm1hdGlvbi5cbiAqLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qL1xuXG5pbXBvcnQgeyBJQ2xpcGJvYXJkU2VydmljZSB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2NsaXBib2FyZC9jb21tb24vY2xpcGJvYXJkU2VydmljZS5qcyc7XG5pbXBvcnQgeyBJQ29tbWFuZFNlcnZpY2UgfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS9jb21tYW5kcy9jb21tb24vY29tbWFuZHMuanMnO1xuaW1wb3J0IHsgSUNvbnRleHRNZW51U2VydmljZSB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2NvbnRleHR2aWV3L2Jyb3dzZXIvY29udGV4dFZpZXcuanMnO1xuaW1wb3J0IHsgSUluc3RhbnRpYXRpb25TZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vaW5zdGFudGlhdGlvbi9jb21tb24vaW5zdGFudGlhdGlvbi5qcyc7XG5pbXBvcnQgeyBJTmF0aXZlSG9zdFNlcnZpY2UgfSBmcm9tICcuLi8uLi8uLi8uLi9wbGF0Zm9ybS9uYXRpdmUvY29tbW9uL25hdGl2ZS5qcyc7XG5pbXBvcnQgeyBJUHJvY2Vzc1NlcnZpY2UsIElSZXNvbHZlZFByb2Nlc3NJbmZvcm1hdGlvbiB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL3Byb2Nlc3MvY29tbW9uL3Byb2Nlc3MuanMnO1xuaW1wb3J0IHsgSVByb2R1Y3RTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vcHJvZHVjdC9jb21tb24vcHJvZHVjdFNlcnZpY2UuanMnO1xuaW1wb3J0IHsgUHJvY2Vzc0V4cGxvcmVyQ29udHJvbCB9IGZyb20gJy4uL2Jyb3dzZXIvcHJvY2Vzc0V4cGxvcmVyQ29udHJvbC5qcyc7XG5cbmV4cG9ydCBjbGFzcyBOYXRpdmVQcm9jZXNzRXhwbG9yZXJDb250cm9sIGV4dGVuZHMgUHJvY2Vzc0V4cGxvcmVyQ29udHJvbCB7XG5cblx0Y29uc3RydWN0b3IoXG5cdFx0Y29udGFpbmVyOiBIVE1MRWxlbWVudCxcblx0XHRASUluc3RhbnRpYXRpb25TZXJ2aWNlIGluc3RhbnRpYXRpb25TZXJ2aWNlOiBJSW5zdGFudGlhdGlvblNlcnZpY2UsXG5cdFx0QElQcm9kdWN0U2VydmljZSBwcm9kdWN0U2VydmljZTogSVByb2R1Y3RTZXJ2aWNlLFxuXHRcdEBJQ29udGV4dE1lbnVTZXJ2aWNlIGNvbnRleHRNZW51U2VydmljZTogSUNvbnRleHRNZW51U2VydmljZSxcblx0XHRASU5hdGl2ZUhvc3RTZXJ2aWNlIHByaXZhdGUgcmVhZG9ubHkgbmF0aXZlSG9zdFNlcnZpY2U6IElOYXRpdmVIb3N0U2VydmljZSxcblx0XHRASUNvbW1hbmRTZXJ2aWNlIGNvbW1hbmRTZXJ2aWNlOiBJQ29tbWFuZFNlcnZpY2UsXG5cdFx0QElQcm9jZXNzU2VydmljZSBwcml2YXRlIHJlYWRvbmx5IHByb2Nlc3NTZXJ2aWNlOiBJUHJvY2Vzc1NlcnZpY2UsXG5cdFx0QElDbGlwYm9hcmRTZXJ2aWNlIGNsaXBib2FyZFNlcnZpY2U6IElDbGlwYm9hcmRTZXJ2aWNlXG5cdCkge1xuXHRcdHN1cGVyKGluc3RhbnRpYXRpb25TZXJ2aWNlLCBwcm9kdWN0U2VydmljZSwgY29udGV4dE1lbnVTZXJ2aWNlLCBjb21tYW5kU2VydmljZSwgY2xpcGJvYXJkU2VydmljZSk7XG5cblx0XHR0aGlzLmNyZWF0ZShjb250YWluZXIpO1xuXHR9XG5cblx0cHJvdGVjdGVkIG92ZXJyaWRlIGtpbGxQcm9jZXNzKHBpZDogbnVtYmVyLCBzaWduYWw6IHN0cmluZyk6IFByb21pc2U8dm9pZD4ge1xuXHRcdHJldHVybiB0aGlzLm5hdGl2ZUhvc3RTZXJ2aWNlLmtpbGxQcm9jZXNzKHBpZCwgc2lnbmFsKTtcblx0fVxuXG5cdHByb3RlY3RlZCBvdmVycmlkZSByZXNvbHZlUHJvY2Vzc2VzKCk6IFByb21pc2U8SVJlc29sdmVkUHJvY2Vzc0luZm9ybWF0aW9uPiB7XG5cdFx0cmV0dXJuIHRoaXMucHJvY2Vzc1NlcnZpY2UucmVzb2x2ZVByb2Nlc3NlcygpO1xuXHR9XG59XG4iXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7OztBQUtBLFNBQVMseUJBQXlCO0FBQ2xDLFNBQVMsdUJBQXVCO0FBQ2hDLFNBQVMsMkJBQTJCO0FBQ3BDLFNBQVMsNkJBQTZCO0FBQ3RDLFNBQVMsMEJBQTBCO0FBQ25DLFNBQVMsdUJBQW9EO0FBQzdELFNBQVMsdUJBQXVCO0FBQ2hDLFNBQVMsOEJBQThCO0FBRWhDLElBQU0sK0JBQU4sY0FBMkMsdUJBQXVCO0FBQUEsRUFFeEUsWUFDQyxXQUN1QixzQkFDTixnQkFDSSxvQkFDZ0IsbUJBQ3BCLGdCQUNpQixnQkFDZixrQkFDbEI7QUFDRCxVQUFNLHNCQUFzQixnQkFBZ0Isb0JBQW9CLGdCQUFnQixnQkFBZ0I7QUFMM0Q7QUFFSDtBQUtsQyxTQUFLLE9BQU8sU0FBUztBQUFBLEVBQ3RCO0FBQUEsRUFFbUIsWUFBWSxLQUFhLFFBQStCO0FBQzFFLFdBQU8sS0FBSyxrQkFBa0IsWUFBWSxLQUFLLE1BQU07QUFBQSxFQUN0RDtBQUFBLEVBRW1CLG1CQUF5RDtBQUMzRSxXQUFPLEtBQUssZUFBZSxpQkFBaUI7QUFBQSxFQUM3QztBQUNEO0FBeEJhLCtCQUFOO0FBQUEsRUFJSjtBQUFBLEVBQ0E7QUFBQSxFQUNBO0FBQUEsRUFDQTtBQUFBLEVBQ0E7QUFBQSxFQUNBO0FBQUEsRUFDQTtBQUFBLEdBVlU7IiwKICAibmFtZXMiOiBbXQp9Cg==

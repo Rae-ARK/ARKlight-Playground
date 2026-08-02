@@ -1,0 +1,47 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { ExtensionRecommendations } from "./extensionRecommendations.js";
+import { IProductService } from "../../../../platform/product/common/productService.js";
+import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
+import { localize } from "../../../../nls.js";
+import { IExtensionManagementServerService } from "../../../services/extensionManagement/common/extensionManagement.js";
+let WebRecommendations = class extends ExtensionRecommendations {
+  constructor(productService, extensionManagementServerService) {
+    super();
+    this.productService = productService;
+    this.extensionManagementServerService = extensionManagementServerService;
+    this._recommendations = [];
+  }
+  get recommendations() {
+    return this._recommendations;
+  }
+  async doActivate() {
+    const isOnlyWeb = this.extensionManagementServerService.webExtensionManagementServer && !this.extensionManagementServerService.localExtensionManagementServer && !this.extensionManagementServerService.remoteExtensionManagementServer;
+    if (isOnlyWeb && Array.isArray(this.productService.webExtensionTips)) {
+      this._recommendations = this.productService.webExtensionTips.map((extensionId) => ({
+        extension: extensionId.toLowerCase(),
+        reason: {
+          reasonId: ExtensionRecommendationReason.Application,
+          reasonText: localize("reason", "This extension is recommended for {0} for the Web", this.productService.nameLong)
+        }
+      }));
+    }
+  }
+};
+WebRecommendations = __decorateClass([
+  __decorateParam(0, IProductService),
+  __decorateParam(1, IExtensionManagementServerService)
+], WebRecommendations);
+export {
+  WebRecommendations
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9jb250cmliL2V4dGVuc2lvbnMvYnJvd3Nlci93ZWJSZWNvbW1lbmRhdGlvbnMudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbIi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4gKiAgQ29weXJpZ2h0IChjKSBNaWNyb3NvZnQgQ29ycG9yYXRpb24uIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKiAgTGljZW5zZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgTGljZW5zZS50eHQgaW4gdGhlIHByb2plY3Qgcm9vdCBmb3IgbGljZW5zZSBpbmZvcm1hdGlvbi5cbiAqLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qL1xuXG5pbXBvcnQgeyBFeHRlbnNpb25SZWNvbW1lbmRhdGlvbnMsIEV4dGVuc2lvblJlY29tbWVuZGF0aW9uIH0gZnJvbSAnLi9leHRlbnNpb25SZWNvbW1lbmRhdGlvbnMuanMnO1xuaW1wb3J0IHsgSVByb2R1Y3RTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vLi4vcGxhdGZvcm0vcHJvZHVjdC9jb21tb24vcHJvZHVjdFNlcnZpY2UuanMnO1xuaW1wb3J0IHsgRXh0ZW5zaW9uUmVjb21tZW5kYXRpb25SZWFzb24gfSBmcm9tICcuLi8uLi8uLi9zZXJ2aWNlcy9leHRlbnNpb25SZWNvbW1lbmRhdGlvbnMvY29tbW9uL2V4dGVuc2lvblJlY29tbWVuZGF0aW9ucy5qcyc7XG5pbXBvcnQgeyBsb2NhbGl6ZSB9IGZyb20gJy4uLy4uLy4uLy4uL25scy5qcyc7XG5pbXBvcnQgeyBJRXh0ZW5zaW9uTWFuYWdlbWVudFNlcnZlclNlcnZpY2UgfSBmcm9tICcuLi8uLi8uLi9zZXJ2aWNlcy9leHRlbnNpb25NYW5hZ2VtZW50L2NvbW1vbi9leHRlbnNpb25NYW5hZ2VtZW50LmpzJztcblxuZXhwb3J0IGNsYXNzIFdlYlJlY29tbWVuZGF0aW9ucyBleHRlbmRzIEV4dGVuc2lvblJlY29tbWVuZGF0aW9ucyB7XG5cblx0cHJpdmF0ZSBfcmVjb21tZW5kYXRpb25zOiBFeHRlbnNpb25SZWNvbW1lbmRhdGlvbltdID0gW107XG5cdGdldCByZWNvbW1lbmRhdGlvbnMoKTogUmVhZG9ubHlBcnJheTxFeHRlbnNpb25SZWNvbW1lbmRhdGlvbj4geyByZXR1cm4gdGhpcy5fcmVjb21tZW5kYXRpb25zOyB9XG5cblx0Y29uc3RydWN0b3IoXG5cdFx0QElQcm9kdWN0U2VydmljZSBwcml2YXRlIHJlYWRvbmx5IHByb2R1Y3RTZXJ2aWNlOiBJUHJvZHVjdFNlcnZpY2UsXG5cdFx0QElFeHRlbnNpb25NYW5hZ2VtZW50U2VydmVyU2VydmljZSBwcml2YXRlIHJlYWRvbmx5IGV4dGVuc2lvbk1hbmFnZW1lbnRTZXJ2ZXJTZXJ2aWNlOiBJRXh0ZW5zaW9uTWFuYWdlbWVudFNlcnZlclNlcnZpY2UsXG5cdCkge1xuXHRcdHN1cGVyKCk7XG5cdH1cblxuXHRwcm90ZWN0ZWQgYXN5bmMgZG9BY3RpdmF0ZSgpOiBQcm9taXNlPHZvaWQ+IHtcblx0XHRjb25zdCBpc09ubHlXZWIgPSB0aGlzLmV4dGVuc2lvbk1hbmFnZW1lbnRTZXJ2ZXJTZXJ2aWNlLndlYkV4dGVuc2lvbk1hbmFnZW1lbnRTZXJ2ZXIgJiYgIXRoaXMuZXh0ZW5zaW9uTWFuYWdlbWVudFNlcnZlclNlcnZpY2UubG9jYWxFeHRlbnNpb25NYW5hZ2VtZW50U2VydmVyICYmICF0aGlzLmV4dGVuc2lvbk1hbmFnZW1lbnRTZXJ2ZXJTZXJ2aWNlLnJlbW90ZUV4dGVuc2lvbk1hbmFnZW1lbnRTZXJ2ZXI7XG5cdFx0aWYgKGlzT25seVdlYiAmJiBBcnJheS5pc0FycmF5KHRoaXMucHJvZHVjdFNlcnZpY2Uud2ViRXh0ZW5zaW9uVGlwcykpIHtcblx0XHRcdHRoaXMuX3JlY29tbWVuZGF0aW9ucyA9IHRoaXMucHJvZHVjdFNlcnZpY2Uud2ViRXh0ZW5zaW9uVGlwcy5tYXAoKGV4dGVuc2lvbklkKTogRXh0ZW5zaW9uUmVjb21tZW5kYXRpb24gPT4gKHtcblx0XHRcdFx0ZXh0ZW5zaW9uOiBleHRlbnNpb25JZC50b0xvd2VyQ2FzZSgpLFxuXHRcdFx0XHRyZWFzb246IHtcblx0XHRcdFx0XHRyZWFzb25JZDogRXh0ZW5zaW9uUmVjb21tZW5kYXRpb25SZWFzb24uQXBwbGljYXRpb24sXG5cdFx0XHRcdFx0cmVhc29uVGV4dDogbG9jYWxpemUoJ3JlYXNvbicsIFwiVGhpcyBleHRlbnNpb24gaXMgcmVjb21tZW5kZWQgZm9yIHswfSBmb3IgdGhlIFdlYlwiLCB0aGlzLnByb2R1Y3RTZXJ2aWNlLm5hbWVMb25nKVxuXHRcdFx0XHR9XG5cdFx0XHR9KSk7XG5cdFx0fVxuXHR9XG59XG5cbiJdLAogICJtYXBwaW5ncyI6ICI7Ozs7Ozs7Ozs7O0FBS0EsU0FBUyxnQ0FBeUQ7QUFDbEUsU0FBUyx1QkFBdUI7QUFDaEMsU0FBUyxxQ0FBcUM7QUFDOUMsU0FBUyxnQkFBZ0I7QUFDekIsU0FBUyx5Q0FBeUM7QUFFM0MsSUFBTSxxQkFBTixjQUFpQyx5QkFBeUI7QUFBQSxFQUtoRSxZQUNtQyxnQkFDa0Isa0NBQ25EO0FBQ0QsVUFBTTtBQUg0QjtBQUNrQjtBQUxyRCxTQUFRLG1CQUE4QyxDQUFDO0FBQUEsRUFRdkQ7QUFBQSxFQVBBLElBQUksa0JBQTBEO0FBQUUsV0FBTyxLQUFLO0FBQUEsRUFBa0I7QUFBQSxFQVM5RixNQUFnQixhQUE0QjtBQUMzQyxVQUFNLFlBQVksS0FBSyxpQ0FBaUMsZ0NBQWdDLENBQUMsS0FBSyxpQ0FBaUMsa0NBQWtDLENBQUMsS0FBSyxpQ0FBaUM7QUFDeE0sUUFBSSxhQUFhLE1BQU0sUUFBUSxLQUFLLGVBQWUsZ0JBQWdCLEdBQUc7QUFDckUsV0FBSyxtQkFBbUIsS0FBSyxlQUFlLGlCQUFpQixJQUFJLENBQUMsaUJBQTBDO0FBQUEsUUFDM0csV0FBVyxZQUFZLFlBQVk7QUFBQSxRQUNuQyxRQUFRO0FBQUEsVUFDUCxVQUFVLDhCQUE4QjtBQUFBLFVBQ3hDLFlBQVksU0FBUyxVQUFVLHFEQUFxRCxLQUFLLGVBQWUsUUFBUTtBQUFBLFFBQ2pIO0FBQUEsTUFDRCxFQUFFO0FBQUEsSUFDSDtBQUFBLEVBQ0Q7QUFDRDtBQXhCYSxxQkFBTjtBQUFBLEVBTUo7QUFBQSxFQUNBO0FBQUEsR0FQVTsiLAogICJuYW1lcyI6IFtdCn0K

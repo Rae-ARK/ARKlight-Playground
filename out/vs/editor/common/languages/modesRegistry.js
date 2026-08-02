@@ -1,0 +1,74 @@
+import * as nls from "../../../nls.js";
+import { Emitter } from "../../../base/common/event.js";
+import { Registry } from "../../../platform/registry/common/platform.js";
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { Mimes } from "../../../base/common/mime.js";
+import { Extensions as ConfigurationExtensions } from "../../../platform/configuration/common/configurationRegistry.js";
+const Extensions = {
+  ModesRegistry: "editor.modesRegistry"
+};
+class EditorModesRegistry extends Disposable {
+  constructor() {
+    super();
+    this._onDidChangeLanguages = this._register(new Emitter());
+    this.onDidChangeLanguages = this._onDidChangeLanguages.event;
+    this._languages = [];
+  }
+  registerLanguage(def) {
+    this._languages.push(def);
+    this._onDidChangeLanguages.fire(void 0);
+    return {
+      dispose: () => {
+        for (let i = 0, len = this._languages.length; i < len; i++) {
+          if (this._languages[i] === def) {
+            this._languages.splice(i, 1);
+            return;
+          }
+        }
+      }
+    };
+  }
+  getLanguages() {
+    return this._languages;
+  }
+}
+const ModesRegistry = new EditorModesRegistry();
+Registry.add(Extensions.ModesRegistry, ModesRegistry);
+const PLAINTEXT_LANGUAGE_ID = "plaintext";
+const PLAINTEXT_EXTENSION = ".txt";
+ModesRegistry.registerLanguage({
+  id: PLAINTEXT_LANGUAGE_ID,
+  extensions: [PLAINTEXT_EXTENSION],
+  aliases: [nls.localize("plainText.alias", "Plain Text"), "text"],
+  mimetypes: [Mimes.text]
+});
+Registry.as(ConfigurationExtensions.Configuration).registerDefaultConfigurations([{
+  overrides: {
+    "[plaintext]": {
+      "editor.unicodeHighlight.ambiguousCharacters": false,
+      "editor.unicodeHighlight.invisibleCharacters": false
+    },
+    // TODO: Below is a workaround for: https://github.com/microsoft/vscode/issues/240567
+    "[go]": {
+      "editor.insertSpaces": false
+    },
+    "[makefile]": {
+      "editor.insertSpaces": false
+    },
+    "[shellscript]": {
+      "files.eol": "\n"
+    },
+    "[yaml]": {
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    }
+  }
+}]);
+export {
+  EditorModesRegistry,
+  Extensions,
+  ModesRegistry,
+  PLAINTEXT_EXTENSION,
+  PLAINTEXT_LANGUAGE_ID
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL2VkaXRvci9jb21tb24vbGFuZ3VhZ2VzL21vZGVzUmVnaXN0cnkudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbIi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4gKiAgQ29weXJpZ2h0IChjKSBNaWNyb3NvZnQgQ29ycG9yYXRpb24uIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKiAgTGljZW5zZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgTGljZW5zZS50eHQgaW4gdGhlIHByb2plY3Qgcm9vdCBmb3IgbGljZW5zZSBpbmZvcm1hdGlvbi5cbiAqLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qL1xuXG5pbXBvcnQgKiBhcyBubHMgZnJvbSAnLi4vLi4vLi4vbmxzLmpzJztcbmltcG9ydCB7IEVtaXR0ZXIsIEV2ZW50IH0gZnJvbSAnLi4vLi4vLi4vYmFzZS9jb21tb24vZXZlbnQuanMnO1xuaW1wb3J0IHsgSUxhbmd1YWdlRXh0ZW5zaW9uUG9pbnQgfSBmcm9tICcuL2xhbmd1YWdlLmpzJztcbmltcG9ydCB7IFJlZ2lzdHJ5IH0gZnJvbSAnLi4vLi4vLi4vcGxhdGZvcm0vcmVnaXN0cnkvY29tbW9uL3BsYXRmb3JtLmpzJztcbmltcG9ydCB7IERpc3Bvc2FibGUsIElEaXNwb3NhYmxlIH0gZnJvbSAnLi4vLi4vLi4vYmFzZS9jb21tb24vbGlmZWN5Y2xlLmpzJztcbmltcG9ydCB7IE1pbWVzIH0gZnJvbSAnLi4vLi4vLi4vYmFzZS9jb21tb24vbWltZS5qcyc7XG5pbXBvcnQgeyBJQ29uZmlndXJhdGlvblJlZ2lzdHJ5LCBFeHRlbnNpb25zIGFzIENvbmZpZ3VyYXRpb25FeHRlbnNpb25zIH0gZnJvbSAnLi4vLi4vLi4vcGxhdGZvcm0vY29uZmlndXJhdGlvbi9jb21tb24vY29uZmlndXJhdGlvblJlZ2lzdHJ5LmpzJztcblxuLy8gRGVmaW5lIGV4dGVuc2lvbiBwb2ludCBpZHNcbmV4cG9ydCBjb25zdCBFeHRlbnNpb25zID0ge1xuXHRNb2Rlc1JlZ2lzdHJ5OiAnZWRpdG9yLm1vZGVzUmVnaXN0cnknXG59O1xuXG5leHBvcnQgY2xhc3MgRWRpdG9yTW9kZXNSZWdpc3RyeSBleHRlbmRzIERpc3Bvc2FibGUge1xuXG5cdHByaXZhdGUgcmVhZG9ubHkgX2xhbmd1YWdlczogSUxhbmd1YWdlRXh0ZW5zaW9uUG9pbnRbXTtcblxuXHRwcml2YXRlIHJlYWRvbmx5IF9vbkRpZENoYW5nZUxhbmd1YWdlcyA9IHRoaXMuX3JlZ2lzdGVyKG5ldyBFbWl0dGVyPHZvaWQ+KCkpO1xuXHRwdWJsaWMgcmVhZG9ubHkgb25EaWRDaGFuZ2VMYW5ndWFnZXM6IEV2ZW50PHZvaWQ+ID0gdGhpcy5fb25EaWRDaGFuZ2VMYW5ndWFnZXMuZXZlbnQ7XG5cblx0Y29uc3RydWN0b3IoKSB7XG5cdFx0c3VwZXIoKTtcblx0XHR0aGlzLl9sYW5ndWFnZXMgPSBbXTtcblx0fVxuXG5cdHB1YmxpYyByZWdpc3Rlckxhbmd1YWdlKGRlZjogSUxhbmd1YWdlRXh0ZW5zaW9uUG9pbnQpOiBJRGlzcG9zYWJsZSB7XG5cdFx0dGhpcy5fbGFuZ3VhZ2VzLnB1c2goZGVmKTtcblx0XHR0aGlzLl9vbkRpZENoYW5nZUxhbmd1YWdlcy5maXJlKHVuZGVmaW5lZCk7XG5cdFx0cmV0dXJuIHtcblx0XHRcdGRpc3Bvc2U6ICgpID0+IHtcblx0XHRcdFx0Zm9yIChsZXQgaSA9IDAsIGxlbiA9IHRoaXMuX2xhbmd1YWdlcy5sZW5ndGg7IGkgPCBsZW47IGkrKykge1xuXHRcdFx0XHRcdGlmICh0aGlzLl9sYW5ndWFnZXNbaV0gPT09IGRlZikge1xuXHRcdFx0XHRcdFx0dGhpcy5fbGFuZ3VhZ2VzLnNwbGljZShpLCAxKTtcblx0XHRcdFx0XHRcdHJldHVybjtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdH1cblx0XHRcdH1cblx0XHR9O1xuXHR9XG5cblx0cHVibGljIGdldExhbmd1YWdlcygpOiBSZWFkb25seUFycmF5PElMYW5ndWFnZUV4dGVuc2lvblBvaW50PiB7XG5cdFx0cmV0dXJuIHRoaXMuX2xhbmd1YWdlcztcblx0fVxufVxuXG5leHBvcnQgY29uc3QgTW9kZXNSZWdpc3RyeSA9IG5ldyBFZGl0b3JNb2Rlc1JlZ2lzdHJ5KCk7XG5SZWdpc3RyeS5hZGQoRXh0ZW5zaW9ucy5Nb2Rlc1JlZ2lzdHJ5LCBNb2Rlc1JlZ2lzdHJ5KTtcblxuZXhwb3J0IGNvbnN0IFBMQUlOVEVYVF9MQU5HVUFHRV9JRCA9ICdwbGFpbnRleHQnO1xuZXhwb3J0IGNvbnN0IFBMQUlOVEVYVF9FWFRFTlNJT04gPSAnLnR4dCc7XG5cbk1vZGVzUmVnaXN0cnkucmVnaXN0ZXJMYW5ndWFnZSh7XG5cdGlkOiBQTEFJTlRFWFRfTEFOR1VBR0VfSUQsXG5cdGV4dGVuc2lvbnM6IFtQTEFJTlRFWFRfRVhURU5TSU9OXSxcblx0YWxpYXNlczogW25scy5sb2NhbGl6ZSgncGxhaW5UZXh0LmFsaWFzJywgXCJQbGFpbiBUZXh0XCIpLCAndGV4dCddLFxuXHRtaW1ldHlwZXM6IFtNaW1lcy50ZXh0XVxufSk7XG5cblJlZ2lzdHJ5LmFzPElDb25maWd1cmF0aW9uUmVnaXN0cnk+KENvbmZpZ3VyYXRpb25FeHRlbnNpb25zLkNvbmZpZ3VyYXRpb24pXG5cdC5yZWdpc3RlckRlZmF1bHRDb25maWd1cmF0aW9ucyhbe1xuXHRcdG92ZXJyaWRlczoge1xuXHRcdFx0J1twbGFpbnRleHRdJzoge1xuXHRcdFx0XHQnZWRpdG9yLnVuaWNvZGVIaWdobGlnaHQuYW1iaWd1b3VzQ2hhcmFjdGVycyc6IGZhbHNlLFxuXHRcdFx0XHQnZWRpdG9yLnVuaWNvZGVIaWdobGlnaHQuaW52aXNpYmxlQ2hhcmFjdGVycyc6IGZhbHNlXG5cdFx0XHR9LFxuXHRcdFx0Ly8gVE9ETzogQmVsb3cgaXMgYSB3b3JrYXJvdW5kIGZvcjogaHR0cHM6Ly9naXRodWIuY29tL21pY3Jvc29mdC92c2NvZGUvaXNzdWVzLzI0MDU2N1xuXHRcdFx0J1tnb10nOiB7XG5cdFx0XHRcdCdlZGl0b3IuaW5zZXJ0U3BhY2VzJzogZmFsc2Vcblx0XHRcdH0sXG5cdFx0XHQnW21ha2VmaWxlXSc6IHtcblx0XHRcdFx0J2VkaXRvci5pbnNlcnRTcGFjZXMnOiBmYWxzZSxcblx0XHRcdH0sXG5cdFx0XHQnW3NoZWxsc2NyaXB0XSc6IHtcblx0XHRcdFx0J2ZpbGVzLmVvbCc6ICdcXG4nXG5cdFx0XHR9LFxuXHRcdFx0J1t5YW1sXSc6IHtcblx0XHRcdFx0J2VkaXRvci5pbnNlcnRTcGFjZXMnOiB0cnVlLFxuXHRcdFx0XHQnZWRpdG9yLnRhYlNpemUnOiAyXG5cdFx0XHR9XG5cdFx0fVxuXHR9XSk7XG4iXSwKICAibWFwcGluZ3MiOiAiQUFLQSxZQUFZLFNBQVM7QUFDckIsU0FBUyxlQUFzQjtBQUUvQixTQUFTLGdCQUFnQjtBQUN6QixTQUFTLGtCQUErQjtBQUN4QyxTQUFTLGFBQWE7QUFDdEIsU0FBaUMsY0FBYywrQkFBK0I7QUFHdkUsTUFBTSxhQUFhO0FBQUEsRUFDekIsZUFBZTtBQUNoQjtBQUVPLE1BQU0sNEJBQTRCLFdBQVc7QUFBQSxFQU9uRCxjQUFjO0FBQ2IsVUFBTTtBQUpQLFNBQWlCLHdCQUF3QixLQUFLLFVBQVUsSUFBSSxRQUFjLENBQUM7QUFDM0UsU0FBZ0IsdUJBQW9DLEtBQUssc0JBQXNCO0FBSTlFLFNBQUssYUFBYSxDQUFDO0FBQUEsRUFDcEI7QUFBQSxFQUVPLGlCQUFpQixLQUEyQztBQUNsRSxTQUFLLFdBQVcsS0FBSyxHQUFHO0FBQ3hCLFNBQUssc0JBQXNCLEtBQUssTUFBUztBQUN6QyxXQUFPO0FBQUEsTUFDTixTQUFTLE1BQU07QUFDZCxpQkFBUyxJQUFJLEdBQUcsTUFBTSxLQUFLLFdBQVcsUUFBUSxJQUFJLEtBQUssS0FBSztBQUMzRCxjQUFJLEtBQUssV0FBVyxDQUFDLE1BQU0sS0FBSztBQUMvQixpQkFBSyxXQUFXLE9BQU8sR0FBRyxDQUFDO0FBQzNCO0FBQUEsVUFDRDtBQUFBLFFBQ0Q7QUFBQSxNQUNEO0FBQUEsSUFDRDtBQUFBLEVBQ0Q7QUFBQSxFQUVPLGVBQXVEO0FBQzdELFdBQU8sS0FBSztBQUFBLEVBQ2I7QUFDRDtBQUVPLE1BQU0sZ0JBQWdCLElBQUksb0JBQW9CO0FBQ3JELFNBQVMsSUFBSSxXQUFXLGVBQWUsYUFBYTtBQUU3QyxNQUFNLHdCQUF3QjtBQUM5QixNQUFNLHNCQUFzQjtBQUVuQyxjQUFjLGlCQUFpQjtBQUFBLEVBQzlCLElBQUk7QUFBQSxFQUNKLFlBQVksQ0FBQyxtQkFBbUI7QUFBQSxFQUNoQyxTQUFTLENBQUMsSUFBSSxTQUFTLG1CQUFtQixZQUFZLEdBQUcsTUFBTTtBQUFBLEVBQy9ELFdBQVcsQ0FBQyxNQUFNLElBQUk7QUFDdkIsQ0FBQztBQUVELFNBQVMsR0FBMkIsd0JBQXdCLGFBQWEsRUFDdkUsOEJBQThCLENBQUM7QUFBQSxFQUMvQixXQUFXO0FBQUEsSUFDVixlQUFlO0FBQUEsTUFDZCwrQ0FBK0M7QUFBQSxNQUMvQywrQ0FBK0M7QUFBQSxJQUNoRDtBQUFBO0FBQUEsSUFFQSxRQUFRO0FBQUEsTUFDUCx1QkFBdUI7QUFBQSxJQUN4QjtBQUFBLElBQ0EsY0FBYztBQUFBLE1BQ2IsdUJBQXVCO0FBQUEsSUFDeEI7QUFBQSxJQUNBLGlCQUFpQjtBQUFBLE1BQ2hCLGFBQWE7QUFBQSxJQUNkO0FBQUEsSUFDQSxVQUFVO0FBQUEsTUFDVCx1QkFBdUI7QUFBQSxNQUN2QixrQkFBa0I7QUFBQSxJQUNuQjtBQUFBLEVBQ0Q7QUFDRCxDQUFDLENBQUM7IiwKICAibmFtZXMiOiBbXQp9Cg==

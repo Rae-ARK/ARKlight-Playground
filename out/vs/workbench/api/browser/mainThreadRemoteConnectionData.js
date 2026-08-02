@@ -1,0 +1,41 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { extHostCustomer } from "../../services/extensions/common/extHostCustomers.js";
+import { ExtHostContext } from "../common/extHost.protocol.js";
+import { IRemoteAuthorityResolverService } from "../../../platform/remote/common/remoteAuthorityResolver.js";
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { IWorkbenchEnvironmentService } from "../../services/environment/common/environmentService.js";
+let MainThreadRemoteConnectionData = class extends Disposable {
+  constructor(extHostContext, _environmentService, remoteAuthorityResolverService) {
+    super();
+    this._environmentService = _environmentService;
+    this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostExtensionService);
+    const remoteAuthority = this._environmentService.remoteAuthority;
+    if (remoteAuthority) {
+      this._register(remoteAuthorityResolverService.onDidChangeConnectionData(() => {
+        const connectionData = remoteAuthorityResolverService.getConnectionData(remoteAuthority);
+        if (connectionData) {
+          this._proxy.$updateRemoteConnectionData(connectionData);
+        }
+      }));
+    }
+  }
+};
+MainThreadRemoteConnectionData = __decorateClass([
+  extHostCustomer,
+  __decorateParam(1, IWorkbenchEnvironmentService),
+  __decorateParam(2, IRemoteAuthorityResolverService)
+], MainThreadRemoteConnectionData);
+export {
+  MainThreadRemoteConnectionData
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9hcGkvYnJvd3Nlci9tYWluVGhyZWFkUmVtb3RlQ29ubmVjdGlvbkRhdGEudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbIi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG4gKiAgQ29weXJpZ2h0IChjKSBNaWNyb3NvZnQgQ29ycG9yYXRpb24uIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKiAgTGljZW5zZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgTGljZW5zZS50eHQgaW4gdGhlIHByb2plY3Qgcm9vdCBmb3IgbGljZW5zZSBpbmZvcm1hdGlvbi5cbiAqLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qL1xuXG5pbXBvcnQgeyBleHRIb3N0Q3VzdG9tZXIsIElFeHRIb3N0Q29udGV4dCB9IGZyb20gJy4uLy4uL3NlcnZpY2VzL2V4dGVuc2lvbnMvY29tbW9uL2V4dEhvc3RDdXN0b21lcnMuanMnO1xuaW1wb3J0IHsgRXh0SG9zdENvbnRleHQsIEV4dEhvc3RFeHRlbnNpb25TZXJ2aWNlU2hhcGUgfSBmcm9tICcuLi9jb21tb24vZXh0SG9zdC5wcm90b2NvbC5qcyc7XG5pbXBvcnQgeyBJUmVtb3RlQXV0aG9yaXR5UmVzb2x2ZXJTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vcGxhdGZvcm0vcmVtb3RlL2NvbW1vbi9yZW1vdGVBdXRob3JpdHlSZXNvbHZlci5qcyc7XG5pbXBvcnQgeyBEaXNwb3NhYmxlIH0gZnJvbSAnLi4vLi4vLi4vYmFzZS9jb21tb24vbGlmZWN5Y2xlLmpzJztcbmltcG9ydCB7IElXb3JrYmVuY2hFbnZpcm9ubWVudFNlcnZpY2UgfSBmcm9tICcuLi8uLi9zZXJ2aWNlcy9lbnZpcm9ubWVudC9jb21tb24vZW52aXJvbm1lbnRTZXJ2aWNlLmpzJztcblxuQGV4dEhvc3RDdXN0b21lclxuZXhwb3J0IGNsYXNzIE1haW5UaHJlYWRSZW1vdGVDb25uZWN0aW9uRGF0YSBleHRlbmRzIERpc3Bvc2FibGUge1xuXG5cdHByaXZhdGUgcmVhZG9ubHkgX3Byb3h5OiBFeHRIb3N0RXh0ZW5zaW9uU2VydmljZVNoYXBlO1xuXG5cdGNvbnN0cnVjdG9yKFxuXHRcdGV4dEhvc3RDb250ZXh0OiBJRXh0SG9zdENvbnRleHQsXG5cdFx0QElXb3JrYmVuY2hFbnZpcm9ubWVudFNlcnZpY2UgcHJvdGVjdGVkIHJlYWRvbmx5IF9lbnZpcm9ubWVudFNlcnZpY2U6IElXb3JrYmVuY2hFbnZpcm9ubWVudFNlcnZpY2UsXG5cdFx0QElSZW1vdGVBdXRob3JpdHlSZXNvbHZlclNlcnZpY2UgcmVtb3RlQXV0aG9yaXR5UmVzb2x2ZXJTZXJ2aWNlOiBJUmVtb3RlQXV0aG9yaXR5UmVzb2x2ZXJTZXJ2aWNlXG5cdCkge1xuXHRcdHN1cGVyKCk7XG5cdFx0dGhpcy5fcHJveHkgPSBleHRIb3N0Q29udGV4dC5nZXRQcm94eShFeHRIb3N0Q29udGV4dC5FeHRIb3N0RXh0ZW5zaW9uU2VydmljZSk7XG5cblx0XHRjb25zdCByZW1vdGVBdXRob3JpdHkgPSB0aGlzLl9lbnZpcm9ubWVudFNlcnZpY2UucmVtb3RlQXV0aG9yaXR5O1xuXHRcdGlmIChyZW1vdGVBdXRob3JpdHkpIHtcblx0XHRcdHRoaXMuX3JlZ2lzdGVyKHJlbW90ZUF1dGhvcml0eVJlc29sdmVyU2VydmljZS5vbkRpZENoYW5nZUNvbm5lY3Rpb25EYXRhKCgpID0+IHtcblx0XHRcdFx0Y29uc3QgY29ubmVjdGlvbkRhdGEgPSByZW1vdGVBdXRob3JpdHlSZXNvbHZlclNlcnZpY2UuZ2V0Q29ubmVjdGlvbkRhdGEocmVtb3RlQXV0aG9yaXR5KTtcblx0XHRcdFx0aWYgKGNvbm5lY3Rpb25EYXRhKSB7XG5cdFx0XHRcdFx0dGhpcy5fcHJveHkuJHVwZGF0ZVJlbW90ZUNvbm5lY3Rpb25EYXRhKGNvbm5lY3Rpb25EYXRhKTtcblx0XHRcdFx0fVxuXHRcdFx0fSkpO1xuXHRcdH1cblx0fVxufVxuIl0sCiAgIm1hcHBpbmdzIjogIjs7Ozs7Ozs7Ozs7QUFLQSxTQUFTLHVCQUF3QztBQUNqRCxTQUFTLHNCQUFvRDtBQUM3RCxTQUFTLHVDQUF1QztBQUNoRCxTQUFTLGtCQUFrQjtBQUMzQixTQUFTLG9DQUFvQztBQUd0QyxJQUFNLGlDQUFOLGNBQTZDLFdBQVc7QUFBQSxFQUk5RCxZQUNDLGdCQUNpRCxxQkFDaEIsZ0NBQ2hDO0FBQ0QsVUFBTTtBQUgyQztBQUlqRCxTQUFLLFNBQVMsZUFBZSxTQUFTLGVBQWUsdUJBQXVCO0FBRTVFLFVBQU0sa0JBQWtCLEtBQUssb0JBQW9CO0FBQ2pELFFBQUksaUJBQWlCO0FBQ3BCLFdBQUssVUFBVSwrQkFBK0IsMEJBQTBCLE1BQU07QUFDN0UsY0FBTSxpQkFBaUIsK0JBQStCLGtCQUFrQixlQUFlO0FBQ3ZGLFlBQUksZ0JBQWdCO0FBQ25CLGVBQUssT0FBTyw0QkFBNEIsY0FBYztBQUFBLFFBQ3ZEO0FBQUEsTUFDRCxDQUFDLENBQUM7QUFBQSxJQUNIO0FBQUEsRUFDRDtBQUNEO0FBdEJhLGlDQUFOO0FBQUEsRUFETjtBQUFBLEVBT0U7QUFBQSxFQUNBO0FBQUEsR0FQVTsiLAogICJuYW1lcyI6IFtdCn0K

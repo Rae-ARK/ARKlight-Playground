@@ -1,0 +1,32 @@
+import { strictEqual } from "assert";
+import { getUNCHost } from "../../node/unc.js";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "../common/utils.js";
+suite("UNC", () => {
+  test("getUNCHost", () => {
+    strictEqual(getUNCHost(void 0), void 0);
+    strictEqual(getUNCHost(null), void 0);
+    strictEqual(getUNCHost("/"), void 0);
+    strictEqual(getUNCHost("/foo"), void 0);
+    strictEqual(getUNCHost("c:"), void 0);
+    strictEqual(getUNCHost("c:\\"), void 0);
+    strictEqual(getUNCHost("c:\\foo"), void 0);
+    strictEqual(getUNCHost("c:\\foo\\\\server\\path"), void 0);
+    strictEqual(getUNCHost("\\"), void 0);
+    strictEqual(getUNCHost("\\\\"), void 0);
+    strictEqual(getUNCHost("\\\\localhost"), void 0);
+    strictEqual(getUNCHost("\\\\localhost\\"), "localhost");
+    strictEqual(getUNCHost("\\\\localhost\\a"), "localhost");
+    strictEqual(getUNCHost("\\\\."), void 0);
+    strictEqual(getUNCHost("\\\\?"), void 0);
+    strictEqual(getUNCHost("\\\\.\\localhost"), ".");
+    strictEqual(getUNCHost("\\\\?\\localhost"), "?");
+    strictEqual(getUNCHost("\\\\.\\UNC\\localhost"), ".");
+    strictEqual(getUNCHost("\\\\?\\UNC\\localhost"), "?");
+    strictEqual(getUNCHost("\\\\.\\UNC\\localhost\\"), "localhost");
+    strictEqual(getUNCHost("\\\\?\\UNC\\localhost\\"), "localhost");
+    strictEqual(getUNCHost("\\\\.\\UNC\\localhost\\a"), "localhost");
+    strictEqual(getUNCHost("\\\\?\\UNC\\localhost\\a"), "localhost");
+  });
+  ensureNoDisposablesAreLeakedInTestSuite();
+});
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL2Jhc2UvdGVzdC9ub2RlL3VuYy50ZXN0LnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICogIENvcHlyaWdodCAoYykgTWljcm9zb2Z0IENvcnBvcmF0aW9uLiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICogIExpY2Vuc2VkIHVuZGVyIHRoZSBNSVQgTGljZW5zZS4gU2VlIExpY2Vuc2UudHh0IGluIHRoZSBwcm9qZWN0IHJvb3QgZm9yIGxpY2Vuc2UgaW5mb3JtYXRpb24uXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cblxuaW1wb3J0IHsgc3RyaWN0RXF1YWwgfSBmcm9tICdhc3NlcnQnO1xuaW1wb3J0IHsgZ2V0VU5DSG9zdCB9IGZyb20gJy4uLy4uL25vZGUvdW5jLmpzJztcbmltcG9ydCB7IGVuc3VyZU5vRGlzcG9zYWJsZXNBcmVMZWFrZWRJblRlc3RTdWl0ZSB9IGZyb20gJy4uL2NvbW1vbi91dGlscy5qcyc7XG5cbnN1aXRlKCdVTkMnLCAoKSA9PiB7XG5cblx0dGVzdCgnZ2V0VU5DSG9zdCcsICgpID0+IHtcblxuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QodW5kZWZpbmVkKSwgdW5kZWZpbmVkKTtcblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KG51bGwpLCB1bmRlZmluZWQpO1xuXG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnLycpLCB1bmRlZmluZWQpO1xuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJy9mb28nKSwgdW5kZWZpbmVkKTtcblxuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJ2M6JyksIHVuZGVmaW5lZCk7XG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnYzpcXFxcJyksIHVuZGVmaW5lZCk7XG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnYzpcXFxcZm9vJyksIHVuZGVmaW5lZCk7XG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnYzpcXFxcZm9vXFxcXFxcXFxzZXJ2ZXJcXFxccGF0aCcpLCB1bmRlZmluZWQpO1xuXG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnXFxcXCcpLCB1bmRlZmluZWQpO1xuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJ1xcXFxcXFxcJyksIHVuZGVmaW5lZCk7XG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnXFxcXFxcXFxsb2NhbGhvc3QnKSwgdW5kZWZpbmVkKTtcblxuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJ1xcXFxcXFxcbG9jYWxob3N0XFxcXCcpLCAnbG9jYWxob3N0Jyk7XG5cdFx0c3RyaWN0RXF1YWwoZ2V0VU5DSG9zdCgnXFxcXFxcXFxsb2NhbGhvc3RcXFxcYScpLCAnbG9jYWxob3N0Jyk7XG5cblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXC4nKSwgdW5kZWZpbmVkKTtcblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXD8nKSwgdW5kZWZpbmVkKTtcblxuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJ1xcXFxcXFxcLlxcXFxsb2NhbGhvc3QnKSwgJy4nKTtcblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXD9cXFxcbG9jYWxob3N0JyksICc/Jyk7XG5cblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXC5cXFxcVU5DXFxcXGxvY2FsaG9zdCcpLCAnLicpO1xuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJ1xcXFxcXFxcP1xcXFxVTkNcXFxcbG9jYWxob3N0JyksICc/Jyk7XG5cblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXC5cXFxcVU5DXFxcXGxvY2FsaG9zdFxcXFwnKSwgJ2xvY2FsaG9zdCcpO1xuXHRcdHN0cmljdEVxdWFsKGdldFVOQ0hvc3QoJ1xcXFxcXFxcP1xcXFxVTkNcXFxcbG9jYWxob3N0XFxcXCcpLCAnbG9jYWxob3N0Jyk7XG5cblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXC5cXFxcVU5DXFxcXGxvY2FsaG9zdFxcXFxhJyksICdsb2NhbGhvc3QnKTtcblx0XHRzdHJpY3RFcXVhbChnZXRVTkNIb3N0KCdcXFxcXFxcXD9cXFxcVU5DXFxcXGxvY2FsaG9zdFxcXFxhJyksICdsb2NhbGhvc3QnKTtcblx0fSk7XG5cblx0ZW5zdXJlTm9EaXNwb3NhYmxlc0FyZUxlYWtlZEluVGVzdFN1aXRlKCk7XG59KTtcbiJdLAogICJtYXBwaW5ncyI6ICJBQUtBLFNBQVMsbUJBQW1CO0FBQzVCLFNBQVMsa0JBQWtCO0FBQzNCLFNBQVMsK0NBQStDO0FBRXhELE1BQU0sT0FBTyxNQUFNO0FBRWxCLE9BQUssY0FBYyxNQUFNO0FBRXhCLGdCQUFZLFdBQVcsTUFBUyxHQUFHLE1BQVM7QUFDNUMsZ0JBQVksV0FBVyxJQUFJLEdBQUcsTUFBUztBQUV2QyxnQkFBWSxXQUFXLEdBQUcsR0FBRyxNQUFTO0FBQ3RDLGdCQUFZLFdBQVcsTUFBTSxHQUFHLE1BQVM7QUFFekMsZ0JBQVksV0FBVyxJQUFJLEdBQUcsTUFBUztBQUN2QyxnQkFBWSxXQUFXLE1BQU0sR0FBRyxNQUFTO0FBQ3pDLGdCQUFZLFdBQVcsU0FBUyxHQUFHLE1BQVM7QUFDNUMsZ0JBQVksV0FBVyx5QkFBeUIsR0FBRyxNQUFTO0FBRTVELGdCQUFZLFdBQVcsSUFBSSxHQUFHLE1BQVM7QUFDdkMsZ0JBQVksV0FBVyxNQUFNLEdBQUcsTUFBUztBQUN6QyxnQkFBWSxXQUFXLGVBQWUsR0FBRyxNQUFTO0FBRWxELGdCQUFZLFdBQVcsaUJBQWlCLEdBQUcsV0FBVztBQUN0RCxnQkFBWSxXQUFXLGtCQUFrQixHQUFHLFdBQVc7QUFFdkQsZ0JBQVksV0FBVyxPQUFPLEdBQUcsTUFBUztBQUMxQyxnQkFBWSxXQUFXLE9BQU8sR0FBRyxNQUFTO0FBRTFDLGdCQUFZLFdBQVcsa0JBQWtCLEdBQUcsR0FBRztBQUMvQyxnQkFBWSxXQUFXLGtCQUFrQixHQUFHLEdBQUc7QUFFL0MsZ0JBQVksV0FBVyx1QkFBdUIsR0FBRyxHQUFHO0FBQ3BELGdCQUFZLFdBQVcsdUJBQXVCLEdBQUcsR0FBRztBQUVwRCxnQkFBWSxXQUFXLHlCQUF5QixHQUFHLFdBQVc7QUFDOUQsZ0JBQVksV0FBVyx5QkFBeUIsR0FBRyxXQUFXO0FBRTlELGdCQUFZLFdBQVcsMEJBQTBCLEdBQUcsV0FBVztBQUMvRCxnQkFBWSxXQUFXLDBCQUEwQixHQUFHLFdBQVc7QUFBQSxFQUNoRSxDQUFDO0FBRUQsMENBQXdDO0FBQ3pDLENBQUM7IiwKICAibmFtZXMiOiBbXQp9Cg==

@@ -1,0 +1,36 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { Emitter } from "../../../base/common/event.js";
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { createDecorator } from "../../instantiation/common/instantiation.js";
+import { ILogService } from "../../log/common/log.js";
+const ISharedProcessLifecycleService = createDecorator("sharedProcessLifecycleService");
+let SharedProcessLifecycleService = class extends Disposable {
+  constructor(logService) {
+    super();
+    this.logService = logService;
+    this._onWillShutdown = this._register(new Emitter());
+    this.onWillShutdown = this._onWillShutdown.event;
+  }
+  fireOnWillShutdown() {
+    this.logService.trace("Lifecycle#onWillShutdown.fire()");
+    this._onWillShutdown.fire();
+  }
+};
+SharedProcessLifecycleService = __decorateClass([
+  __decorateParam(0, ILogService)
+], SharedProcessLifecycleService);
+export {
+  ISharedProcessLifecycleService,
+  SharedProcessLifecycleService
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3BsYXRmb3JtL2xpZmVjeWNsZS9ub2RlL3NoYXJlZFByb2Nlc3NMaWZlY3ljbGVTZXJ2aWNlLnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICogIENvcHlyaWdodCAoYykgTWljcm9zb2Z0IENvcnBvcmF0aW9uLiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICogIExpY2Vuc2VkIHVuZGVyIHRoZSBNSVQgTGljZW5zZS4gU2VlIExpY2Vuc2UudHh0IGluIHRoZSBwcm9qZWN0IHJvb3QgZm9yIGxpY2Vuc2UgaW5mb3JtYXRpb24uXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cblxuaW1wb3J0IHsgRW1pdHRlciwgRXZlbnQgfSBmcm9tICcuLi8uLi8uLi9iYXNlL2NvbW1vbi9ldmVudC5qcyc7XG5pbXBvcnQgeyBEaXNwb3NhYmxlIH0gZnJvbSAnLi4vLi4vLi4vYmFzZS9jb21tb24vbGlmZWN5Y2xlLmpzJztcbmltcG9ydCB7IGNyZWF0ZURlY29yYXRvciB9IGZyb20gJy4uLy4uL2luc3RhbnRpYXRpb24vY29tbW9uL2luc3RhbnRpYXRpb24uanMnO1xuaW1wb3J0IHsgSUxvZ1NlcnZpY2UgfSBmcm9tICcuLi8uLi9sb2cvY29tbW9uL2xvZy5qcyc7XG5cbmV4cG9ydCBjb25zdCBJU2hhcmVkUHJvY2Vzc0xpZmVjeWNsZVNlcnZpY2UgPSBjcmVhdGVEZWNvcmF0b3I8SVNoYXJlZFByb2Nlc3NMaWZlY3ljbGVTZXJ2aWNlPignc2hhcmVkUHJvY2Vzc0xpZmVjeWNsZVNlcnZpY2UnKTtcblxuZXhwb3J0IGludGVyZmFjZSBJU2hhcmVkUHJvY2Vzc0xpZmVjeWNsZVNlcnZpY2Uge1xuXG5cdHJlYWRvbmx5IF9zZXJ2aWNlQnJhbmQ6IHVuZGVmaW5lZDtcblxuXHQvKipcblx0ICogQW4gZXZlbnQgZm9yIHdoZW4gdGhlIGFwcGxpY2F0aW9uIHdpbGwgc2h1dGRvd25cblx0ICovXG5cdHJlYWRvbmx5IG9uV2lsbFNodXRkb3duOiBFdmVudDx2b2lkPjtcbn1cblxuZXhwb3J0IGNsYXNzIFNoYXJlZFByb2Nlc3NMaWZlY3ljbGVTZXJ2aWNlIGV4dGVuZHMgRGlzcG9zYWJsZSBpbXBsZW1lbnRzIElTaGFyZWRQcm9jZXNzTGlmZWN5Y2xlU2VydmljZSB7XG5cblx0ZGVjbGFyZSByZWFkb25seSBfc2VydmljZUJyYW5kOiB1bmRlZmluZWQ7XG5cblx0cHJpdmF0ZSByZWFkb25seSBfb25XaWxsU2h1dGRvd24gPSB0aGlzLl9yZWdpc3RlcihuZXcgRW1pdHRlcjx2b2lkPigpKTtcblx0cmVhZG9ubHkgb25XaWxsU2h1dGRvd24gPSB0aGlzLl9vbldpbGxTaHV0ZG93bi5ldmVudDtcblxuXHRjb25zdHJ1Y3Rvcihcblx0XHRASUxvZ1NlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBsb2dTZXJ2aWNlOiBJTG9nU2VydmljZVxuXHQpIHtcblx0XHRzdXBlcigpO1xuXHR9XG5cblx0ZmlyZU9uV2lsbFNodXRkb3duKCk6IHZvaWQge1xuXHRcdHRoaXMubG9nU2VydmljZS50cmFjZSgnTGlmZWN5Y2xlI29uV2lsbFNodXRkb3duLmZpcmUoKScpO1xuXG5cdFx0dGhpcy5fb25XaWxsU2h1dGRvd24uZmlyZSgpO1xuXHR9XG59XG4iXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7OztBQUtBLFNBQVMsZUFBc0I7QUFDL0IsU0FBUyxrQkFBa0I7QUFDM0IsU0FBUyx1QkFBdUI7QUFDaEMsU0FBUyxtQkFBbUI7QUFFckIsTUFBTSxpQ0FBaUMsZ0JBQWdELCtCQUErQjtBQVl0SCxJQUFNLGdDQUFOLGNBQTRDLFdBQXFEO0FBQUEsRUFPdkcsWUFDK0IsWUFDN0I7QUFDRCxVQUFNO0FBRndCO0FBSi9CLFNBQWlCLGtCQUFrQixLQUFLLFVBQVUsSUFBSSxRQUFjLENBQUM7QUFDckUsU0FBUyxpQkFBaUIsS0FBSyxnQkFBZ0I7QUFBQSxFQU0vQztBQUFBLEVBRUEscUJBQTJCO0FBQzFCLFNBQUssV0FBVyxNQUFNLGlDQUFpQztBQUV2RCxTQUFLLGdCQUFnQixLQUFLO0FBQUEsRUFDM0I7QUFDRDtBQWxCYSxnQ0FBTjtBQUFBLEVBUUo7QUFBQSxHQVJVOyIsCiAgIm5hbWVzIjogW10KfQo=

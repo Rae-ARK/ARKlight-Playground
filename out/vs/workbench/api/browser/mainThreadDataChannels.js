@@ -1,0 +1,33 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { IDataChannelService } from "../../../platform/dataChannel/common/dataChannel.js";
+import { extHostNamedCustomer } from "../../services/extensions/common/extHostCustomers.js";
+import { ExtHostContext, MainContext } from "../common/extHost.protocol.js";
+let MainThreadDataChannels = class extends Disposable {
+  constructor(extHostContext, _dataChannelService) {
+    super();
+    this._dataChannelService = _dataChannelService;
+    this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDataChannels);
+    this._register(this._dataChannelService.onDidSendData((e) => {
+      this._proxy.$onDidReceiveData(e.channelId, e.data);
+    }));
+  }
+};
+MainThreadDataChannels = __decorateClass([
+  extHostNamedCustomer(MainContext.MainThreadDataChannels),
+  __decorateParam(1, IDataChannelService)
+], MainThreadDataChannels);
+export {
+  MainThreadDataChannels
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9hcGkvYnJvd3Nlci9tYWluVGhyZWFkRGF0YUNoYW5uZWxzLnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICogIENvcHlyaWdodCAoYykgTWljcm9zb2Z0IENvcnBvcmF0aW9uLiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICogIExpY2Vuc2VkIHVuZGVyIHRoZSBNSVQgTGljZW5zZS4gU2VlIExpY2Vuc2UudHh0IGluIHRoZSBwcm9qZWN0IHJvb3QgZm9yIGxpY2Vuc2UgaW5mb3JtYXRpb24uXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cblxuaW1wb3J0IHsgRGlzcG9zYWJsZSB9IGZyb20gJy4uLy4uLy4uL2Jhc2UvY29tbW9uL2xpZmVjeWNsZS5qcyc7XG5pbXBvcnQgeyBJRGF0YUNoYW5uZWxTZXJ2aWNlIH0gZnJvbSAnLi4vLi4vLi4vcGxhdGZvcm0vZGF0YUNoYW5uZWwvY29tbW9uL2RhdGFDaGFubmVsLmpzJztcbmltcG9ydCB7IGV4dEhvc3ROYW1lZEN1c3RvbWVyLCBJRXh0SG9zdENvbnRleHQgfSBmcm9tICcuLi8uLi9zZXJ2aWNlcy9leHRlbnNpb25zL2NvbW1vbi9leHRIb3N0Q3VzdG9tZXJzLmpzJztcbmltcG9ydCB7IEV4dEhvc3RDb250ZXh0LCBFeHRIb3N0RGF0YUNoYW5uZWxzU2hhcGUsIE1haW5Db250ZXh0LCBNYWluVGhyZWFkRGF0YUNoYW5uZWxzU2hhcGUgfSBmcm9tICcuLi9jb21tb24vZXh0SG9zdC5wcm90b2NvbC5qcyc7XG5cbkBleHRIb3N0TmFtZWRDdXN0b21lcihNYWluQ29udGV4dC5NYWluVGhyZWFkRGF0YUNoYW5uZWxzKVxuZXhwb3J0IGNsYXNzIE1haW5UaHJlYWREYXRhQ2hhbm5lbHMgZXh0ZW5kcyBEaXNwb3NhYmxlIGltcGxlbWVudHMgTWFpblRocmVhZERhdGFDaGFubmVsc1NoYXBlIHtcblxuXHRwcml2YXRlIHJlYWRvbmx5IF9wcm94eTogRXh0SG9zdERhdGFDaGFubmVsc1NoYXBlO1xuXG5cdGNvbnN0cnVjdG9yKFxuXHRcdGV4dEhvc3RDb250ZXh0OiBJRXh0SG9zdENvbnRleHQsXG5cdFx0QElEYXRhQ2hhbm5lbFNlcnZpY2UgcHJpdmF0ZSByZWFkb25seSBfZGF0YUNoYW5uZWxTZXJ2aWNlOiBJRGF0YUNoYW5uZWxTZXJ2aWNlXG5cdCkge1xuXHRcdHN1cGVyKCk7XG5cdFx0dGhpcy5fcHJveHkgPSBleHRIb3N0Q29udGV4dC5nZXRQcm94eShFeHRIb3N0Q29udGV4dC5FeHRIb3N0RGF0YUNoYW5uZWxzKTtcblxuXHRcdHRoaXMuX3JlZ2lzdGVyKHRoaXMuX2RhdGFDaGFubmVsU2VydmljZS5vbkRpZFNlbmREYXRhKGUgPT4ge1xuXHRcdFx0dGhpcy5fcHJveHkuJG9uRGlkUmVjZWl2ZURhdGEoZS5jaGFubmVsSWQsIGUuZGF0YSk7XG5cdFx0fSkpO1xuXHR9XG59XG4iXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7OztBQUtBLFNBQVMsa0JBQWtCO0FBQzNCLFNBQVMsMkJBQTJCO0FBQ3BDLFNBQVMsNEJBQTZDO0FBQ3RELFNBQVMsZ0JBQTBDLG1CQUFnRDtBQUc1RixJQUFNLHlCQUFOLGNBQXFDLFdBQWtEO0FBQUEsRUFJN0YsWUFDQyxnQkFDc0MscUJBQ3JDO0FBQ0QsVUFBTTtBQUZnQztBQUd0QyxTQUFLLFNBQVMsZUFBZSxTQUFTLGVBQWUsbUJBQW1CO0FBRXhFLFNBQUssVUFBVSxLQUFLLG9CQUFvQixjQUFjLE9BQUs7QUFDMUQsV0FBSyxPQUFPLGtCQUFrQixFQUFFLFdBQVcsRUFBRSxJQUFJO0FBQUEsSUFDbEQsQ0FBQyxDQUFDO0FBQUEsRUFDSDtBQUNEO0FBZmEseUJBQU47QUFBQSxFQUROLHFCQUFxQixZQUFZLHNCQUFzQjtBQUFBLEVBT3JEO0FBQUEsR0FOVTsiLAogICJuYW1lcyI6IFtdCn0K

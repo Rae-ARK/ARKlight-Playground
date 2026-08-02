@@ -1,0 +1,31 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { WorkbenchPhase, registerWorkbenchContribution2 } from "../../../common/contributions.js";
+import { registerAction2 } from "../../../../platform/actions/common/actions.js";
+import { ListResizeColumnAction } from "./listResizeColumnAction.js";
+let ListContext = class {
+  constructor(contextKeyService) {
+    contextKeyService.createKey("listSupportsTypeNavigation", true);
+    contextKeyService.createKey("listSupportsKeyboardNavigation", true);
+  }
+};
+ListContext.ID = "workbench.contrib.listContext";
+ListContext = __decorateClass([
+  __decorateParam(0, IContextKeyService)
+], ListContext);
+registerWorkbenchContribution2(ListContext.ID, ListContext, WorkbenchPhase.BlockStartup);
+registerAction2(ListResizeColumnAction);
+export {
+  ListContext
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL3dvcmtiZW5jaC9jb250cmliL2xpc3QvYnJvd3Nlci9saXN0LmNvbnRyaWJ1dGlvbi50cyJdLAogICJzb3VyY2VzQ29udGVudCI6IFsiLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS1cbiAqICBDb3B5cmlnaHQgKGMpIE1pY3Jvc29mdCBDb3Jwb3JhdGlvbi4gQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqICBMaWNlbnNlZCB1bmRlciB0aGUgTUlUIExpY2Vuc2UuIFNlZSBMaWNlbnNlLnR4dCBpbiB0aGUgcHJvamVjdCByb290IGZvciBsaWNlbnNlIGluZm9ybWF0aW9uLlxuICotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovXG5cbmltcG9ydCB7IElDb250ZXh0S2V5U2VydmljZSB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2NvbnRleHRrZXkvY29tbW9uL2NvbnRleHRrZXkuanMnO1xuaW1wb3J0IHsgSVdvcmtiZW5jaENvbnRyaWJ1dGlvbiwgV29ya2JlbmNoUGhhc2UsIHJlZ2lzdGVyV29ya2JlbmNoQ29udHJpYnV0aW9uMiB9IGZyb20gJy4uLy4uLy4uL2NvbW1vbi9jb250cmlidXRpb25zLmpzJztcbmltcG9ydCB7IHJlZ2lzdGVyQWN0aW9uMiB9IGZyb20gJy4uLy4uLy4uLy4uL3BsYXRmb3JtL2FjdGlvbnMvY29tbW9uL2FjdGlvbnMuanMnO1xuaW1wb3J0IHsgTGlzdFJlc2l6ZUNvbHVtbkFjdGlvbiB9IGZyb20gJy4vbGlzdFJlc2l6ZUNvbHVtbkFjdGlvbi5qcyc7XG5cbmV4cG9ydCBjbGFzcyBMaXN0Q29udGV4dCBpbXBsZW1lbnRzIElXb3JrYmVuY2hDb250cmlidXRpb24ge1xuXG5cdHN0YXRpYyByZWFkb25seSBJRCA9ICd3b3JrYmVuY2guY29udHJpYi5saXN0Q29udGV4dCc7XG5cblx0Y29uc3RydWN0b3IoXG5cdFx0QElDb250ZXh0S2V5U2VydmljZSBjb250ZXh0S2V5U2VydmljZTogSUNvbnRleHRLZXlTZXJ2aWNlXG5cdCkge1xuXHRcdGNvbnRleHRLZXlTZXJ2aWNlLmNyZWF0ZUtleTxib29sZWFuPignbGlzdFN1cHBvcnRzVHlwZU5hdmlnYXRpb24nLCB0cnVlKTtcblxuXHRcdC8vIEBkZXByZWNhdGVkIGluIGZhdm9yIG9mIGxpc3RTdXBwb3J0c1R5cGVOYXZpZ2F0aW9uXG5cdFx0Y29udGV4dEtleVNlcnZpY2UuY3JlYXRlS2V5KCdsaXN0U3VwcG9ydHNLZXlib2FyZE5hdmlnYXRpb24nLCB0cnVlKTtcblx0fVxufVxuXG5yZWdpc3RlcldvcmtiZW5jaENvbnRyaWJ1dGlvbjIoTGlzdENvbnRleHQuSUQsIExpc3RDb250ZXh0LCBXb3JrYmVuY2hQaGFzZS5CbG9ja1N0YXJ0dXApO1xucmVnaXN0ZXJBY3Rpb24yKExpc3RSZXNpemVDb2x1bW5BY3Rpb24pO1xuXG4iXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7OztBQUtBLFNBQVMsMEJBQTBCO0FBQ25DLFNBQWlDLGdCQUFnQixzQ0FBc0M7QUFDdkYsU0FBUyx1QkFBdUI7QUFDaEMsU0FBUyw4QkFBOEI7QUFFaEMsSUFBTSxjQUFOLE1BQW9EO0FBQUEsRUFJMUQsWUFDcUIsbUJBQ25CO0FBQ0Qsc0JBQWtCLFVBQW1CLDhCQUE4QixJQUFJO0FBR3ZFLHNCQUFrQixVQUFVLGtDQUFrQyxJQUFJO0FBQUEsRUFDbkU7QUFDRDtBQVphLFlBRUksS0FBSztBQUZULGNBQU47QUFBQSxFQUtKO0FBQUEsR0FMVTtBQWNiLCtCQUErQixZQUFZLElBQUksYUFBYSxlQUFlLFlBQVk7QUFDdkYsZ0JBQWdCLHNCQUFzQjsiLAogICJuYW1lcyI6IFtdCn0K

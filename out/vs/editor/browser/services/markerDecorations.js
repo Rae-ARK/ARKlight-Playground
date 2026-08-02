@@ -1,0 +1,26 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
+import { IMarkerDecorationsService } from "../../common/services/markerDecorations.js";
+let MarkerDecorationsContribution = class {
+  constructor(_editor, _markerDecorationsService) {
+  }
+  dispose() {
+  }
+};
+MarkerDecorationsContribution.ID = "editor.contrib.markerDecorations";
+MarkerDecorationsContribution = __decorateClass([
+  __decorateParam(1, IMarkerDecorationsService)
+], MarkerDecorationsContribution);
+export {
+  MarkerDecorationsContribution
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsiL2hvbWUvcmFqLWt1bWFyL0Rvd25sb2Fkcy9hcmtsaWdodC1pZGUtc3RhZ2UwLXNjYWZmb2xkL212cC1zY2FmZm9sZC9mcm9udGVuZC92c2NvZGUvc3JjL3ZzL2VkaXRvci9icm93c2VyL3NlcnZpY2VzL21hcmtlckRlY29yYXRpb25zLnRzIl0sCiAgInNvdXJjZXNDb250ZW50IjogWyIvKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICogIENvcHlyaWdodCAoYykgTWljcm9zb2Z0IENvcnBvcmF0aW9uLiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICogIExpY2Vuc2VkIHVuZGVyIHRoZSBNSVQgTGljZW5zZS4gU2VlIExpY2Vuc2UudHh0IGluIHRoZSBwcm9qZWN0IHJvb3QgZm9yIGxpY2Vuc2UgaW5mb3JtYXRpb24uXG4gKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi9cblxuaW1wb3J0IHsgSU1hcmtlckRlY29yYXRpb25zU2VydmljZSB9IGZyb20gJy4uLy4uL2NvbW1vbi9zZXJ2aWNlcy9tYXJrZXJEZWNvcmF0aW9ucy5qcyc7XG5pbXBvcnQgeyBJQ29kZUVkaXRvciB9IGZyb20gJy4uL2VkaXRvckJyb3dzZXIuanMnO1xuaW1wb3J0IHsgSUVkaXRvckNvbnRyaWJ1dGlvbiB9IGZyb20gJy4uLy4uL2NvbW1vbi9lZGl0b3JDb21tb24uanMnO1xuXG5leHBvcnQgY2xhc3MgTWFya2VyRGVjb3JhdGlvbnNDb250cmlidXRpb24gaW1wbGVtZW50cyBJRWRpdG9yQ29udHJpYnV0aW9uIHtcblxuXHRwdWJsaWMgc3RhdGljIHJlYWRvbmx5IElEOiBzdHJpbmcgPSAnZWRpdG9yLmNvbnRyaWIubWFya2VyRGVjb3JhdGlvbnMnO1xuXG5cdGNvbnN0cnVjdG9yKFxuXHRcdF9lZGl0b3I6IElDb2RlRWRpdG9yLFxuXHRcdEBJTWFya2VyRGVjb3JhdGlvbnNTZXJ2aWNlIF9tYXJrZXJEZWNvcmF0aW9uc1NlcnZpY2U6IElNYXJrZXJEZWNvcmF0aW9uc1NlcnZpY2Vcblx0KSB7XG5cdFx0Ly8gRG9lc24ndCBkbyBhbnl0aGluZywganVzdCByZXF1aXJlcyBgSU1hcmtlckRlY29yYXRpb25zU2VydmljZWAgdG8gbWFrZSBzdXJlIGl0IGdldHMgaW5zdGFudGlhdGVkXG5cdH1cblxuXHRkaXNwb3NlKCk6IHZvaWQge1xuXHR9XG59XG4iXSwKICAibWFwcGluZ3MiOiAiOzs7Ozs7Ozs7OztBQUtBLFNBQVMsaUNBQWlDO0FBSW5DLElBQU0sZ0NBQU4sTUFBbUU7QUFBQSxFQUl6RSxZQUNDLFNBQzJCLDJCQUMxQjtBQUFBLEVBRUY7QUFBQSxFQUVBLFVBQWdCO0FBQUEsRUFDaEI7QUFDRDtBQWJhLDhCQUVXLEtBQWE7QUFGeEIsZ0NBQU47QUFBQSxFQU1KO0FBQUEsR0FOVTsiLAogICJuYW1lcyI6IFtdCn0K
