@@ -18,24 +18,26 @@ that duplication is exactly what went stale before this file existed.
 | 3 | Backend: non-recursive dir listing, rename, copy, plain-text search, JSON error bodies, `ARKLIGHT_READONLY` mode | `backend/app.py` |
 | 3 | Backend: SSE `/workspace/watch` change stream, optimistic-concurrency writes (`If-Unmodified-Since-Mtime` / `412`) | `backend/app.py` |
 | 3 | Extension: file/text search providers, `watch()` wired to the SSE stream, mtime cache for concurrency headers | `extensions/arklight-fs/src/` |
+| 4 | `backend/app.py` refactored to an application-factory (`create_app(...)`); no endpoint behavior changed | `backend/app.py` |
+| 4 | `backend/tests/test_app.py` — 36 tests (CRUD, path-escape rejection, rename/copy edge cases, `412` conflicts, readonly mode) | `backend/tests/` |
+| 4 | Fixed import-time side effect: `app.py` used to create `./workspace` and start the watch-poller just by being imported | `backend/app.py` |
 
 ## Not started
 
-### Stage 4 — Correctness & hygiene
+### Stage 4 remainder — not covered by the backend test suite
 
-The prerequisite for everything below: right now `out/vs` (the
-compiled snapshot committed alongside source on `application`) predates
-Stage 2/3, so a naive "just serve `out/vs`" misses the whole ARKlight
-filesystem layer. This stage is bookkeeping, not features:
+Two items from the original Stage 4 scope are still open; they were
+deferred rather than dropped:
 
 - [ ] Rebuild `out/vs` so the committed snapshot matches source, or
       stop committing a compiled snapshot on `application` at all and
       only freeze one on `main`.
-- [ ] Test suite for `backend/app.py`: path-escape rejection, the
-      `412` conflict path, rename/copy edge cases (missing source,
-      existing destination), `ARKLIGHT_READONLY` behavior.
 - [ ] Smoke test for `extensions/arklight-fs` against a running
-      `backend/app.py` (spin up Flask, exercise the provider).
+      `backend/app.py`. Deferred because it needs the real VS Code
+      extension-host test harness (`@vscode/test-web` or similar) —
+      the provider is typed against `vscode.Uri`/`vscode.FileSystemError`,
+      which aren't available as a plain Node import the way Flask's
+      test client is for the backend.
 
 ### Stage 5 — Small, dependency-free tooling (stdlib-only statistics, not ML)
 

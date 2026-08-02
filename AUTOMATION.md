@@ -120,9 +120,28 @@ Stage 2/3, so it does not contain `arklight-fs`. Re-run
 `extensions/arklight-fs` or `backend/app.py`'s contract before
 trusting a served build.
 
+## Done since this log was written (Stage 4)
+
+- [x] `backend/app.py` refactored to an application-factory pattern
+      (`create_app(...)`) — no endpoint behavior changed, but it's now
+      possible to spin up isolated instances against a tmp workspace
+      with the background watch-poller disabled, instead of every
+      import touching disk and spawning a thread.
+- [x] `backend/tests/test_app.py` — 36 tests: CRUD lifecycle,
+      path-escape rejection, rename/copy edge cases (missing source,
+      existing destination), the `412` optimistic-concurrency
+      conflict path, and `ARKLIGHT_READONLY` behavior. Run with
+      `python -m unittest discover -s tests -v` from `backend/`.
+- [x] Fixed a real bug the refactor surfaced: the old module built
+      `app = create_app()` at import time, so merely importing
+      `app.py` (as the test suite does) created a `./workspace`
+      directory and started the watch-poller thread as a side effect.
+      App construction now only happens inside `if __name__ ==
+      "__main__":`.
+
 ## Still open
 
-See `ROADMAP.md` for the current staged plan (Stage 4 onward) --
-backend hardening (auth, real filesystem-event watching), editor
-features (terminal, multi-root workspaces), and a stdlib-only
-statistical tooling stage (fuzzy search, human-readable errors).
+See `ROADMAP.md` for the current staged plan (Stage 5 onward) --
+stdlib-only statistical tooling (fuzzy search, human-readable
+errors), backend hardening (auth, real filesystem-event watching),
+and editor features (terminal, multi-root workspaces).

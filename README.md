@@ -62,11 +62,15 @@ Configure the backend URL via the `arklight.backendUrl` setting
 
 Done: Stage 0 (verified working browser build), the pruning batches,
 Stage 1 (branch split), Stage 2 (`arklight-fs` FileSystemProvider +
-`workspaceProvider` wiring), and Stage 3 (SSE file watching,
-optimistic-concurrency writes, file/text search providers).
+`workspaceProvider` wiring), Stage 3 (SSE file watching,
+optimistic-concurrency writes, file/text search providers), and
+Stage 4 (`backend/app.py` refactored to an application factory,
+`backend/tests/` test suite — 36 tests covering CRUD, path-escape
+rejection, rename/copy edge cases, optimistic-concurrency conflicts,
+and read-only mode).
 
-Not started: everything from Stage 4 onward. See `ROADMAP.md` for
-what's next, including a stage on building small, dependency-free
+Not started: Stage 5 onward. See `ROADMAP.md` for what's next,
+including a stage on building small, dependency-free
 (Python-standard-library-only) statistical helpers — fuzzy
 component/file search, human-readable error messages, and some
 "old-school chatbot" tricks (Markov chains, bag-of-words, n-gram
