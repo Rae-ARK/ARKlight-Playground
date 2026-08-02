@@ -1,0 +1,10 @@
+out/**
+src/**
+tsconfig.json
+tsconfig.browser.json
+esbuild.mts
+esbuild.browser.mts
+**/tsconfig.tsbuildinfo
+**/.eslintrc.json
+**/*.map
+**/*.ts

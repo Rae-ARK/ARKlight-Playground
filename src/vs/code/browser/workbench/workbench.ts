@@ -475,6 +475,11 @@ class WorkspaceProvider implements IWorkspaceProvider {
 				workspace = { folderUri: URI.revive(config.folderUri) };
 			} else if (config.workspaceUri) {
 				workspace = { workspaceUri: URI.revive(config.workspaceUri) };
+			} else {
+				// ARKlight: fall back to the virtual `arklight:/project` folder
+				// backed by the arklight-fs extension's FileSystemProvider,
+				// rather than an empty window with no backing filesystem.
+				workspace = { folderUri: URI.from({ scheme: 'arklight', path: '/project' }) };
 			}
 		}
 
