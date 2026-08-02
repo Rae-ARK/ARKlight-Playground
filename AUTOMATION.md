@@ -82,12 +82,30 @@ Only branding fields changed -- `nameShort`, `nameLong`,
 either, so Marketplace was already off by default before this repo
 existed -- nothing was suppressed that wasn't already absent.
 
+## Branch state (added after Stage 0/pruning)
+
+Pruning per `PRUNE-PLAN.md` is done -- all batches through 7, plus a
+themes cut not in the original plan. After the last batch, `main` was
+further collapsed to a single commit containing only compiled `out/vs`
+output, with the full source tree removed entirely (not just pruned).
+That was a deliberate "freeze a working artifact" checkpoint, but it
+means `main` can no longer `npm install` / `compile-client` / build
+anything -- it's a static snapshot only.
+
+The buildable source tree (everything this file's commands operate on)
+was restored on a separate `application` branch, alongside the same
+`out/vs`. All further work, including the items below, happens on
+`application`. Don't extend `main`.
+
+The minimal Flask backend (`backend/app.py`) now exists, exposing
+`/workspace/files` and `/workspace/file/<path>` for list/read/write.
+See `backend/README.md`. It is not yet wired into the workbench.
+
 ## Still open (not yet done as of this log)
 
 - [ ] `workspaceProvider` pointing at a virtual `arklight:/project`
       folder (Stage 2 of the staged plan, not started).
 - [ ] The bundled web extension registering a FileSystemProvider
-      backed by the Flask backend (also Stage 2).
-- [ ] Pruning per `PRUNE-PLAN.md` -- do this after Stage 0 is
-      committed as a known-good baseline, one batch at a time, with a
-      rebuild-and-verify after each batch.
+      backed by the Flask backend -- the backend itself exists
+      (`backend/app.py`) but nothing in `src/vs/platform/files/**`
+      calls it yet.

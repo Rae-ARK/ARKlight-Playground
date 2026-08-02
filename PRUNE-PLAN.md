@@ -1,5 +1,15 @@
 # Trimming this checkout down to what ARKlight IDE needs
 
+> **Status:** all batches below through Batch 5 landed as planned, plus
+> two batches not in this original document -- Batch 6 (further
+> extension cleanup) and Batch 7 (removed all non-default themes). After
+> Batch 7, `main` was collapsed to a single commit containing only
+> compiled `out/vs`, deleting the full source tree this plan operates
+> on -- `main` is now a frozen static artifact and unbuildable. The
+> source tree described below was restored on the `application` branch,
+> which is where any further pruning or building should happen. See
+> `AUTOMATION.md`'s "Branch state" section for details.
+
 Ground rule: `src/vs/**` is one TypeScript project. Deleting files inside
 it risks dangling imports and a broken compile. Everything in this plan
 targets self-contained folders instead (`extensions/*`, `test/`,
