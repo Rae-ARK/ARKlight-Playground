@@ -31,21 +31,46 @@ See `AUTOMATION.md` for the exact command sequence (system deps,
 `compile-client` vs `compile-web`, serving with `scripts/code-web.sh`,
 and known-expected console output vs. real failures).
 
+**Note:** the `out/vs` compiled snapshot checked into this branch
+predates the `arklight-fs` extension (it was built during the Stage 0
+prune, before Stage 2/3 landed). If you serve `out/vs` as-is you will
+get a stock pruned workbench with no ARKlight filesystem. Run
+`compile-client` + `compile-web` yourself to get a build that actually
+includes `arklight-fs` — see `AUTOMATION.md`.
+
 ## Backend
 
-`backend/` is a minimal Flask service exposing a REST API
-(`/workspace/files`, `/workspace/file/<path>`) for reading and writing
-real files on disk. It's not wired into the workbench yet — that's the
-next step, replacing the default local `FileSystemProvider` with one
-that calls this API. See `backend/README.md`.
+`backend/` is a Flask service exposing a REST API over a
+`WORKSPACE_ROOT` directory on disk — listing, stat, read/write,
+create/delete, rename, copy, plain-text search, and an SSE change
+stream. It backs the `arklight-fs` extension's `FileSystemProvider`
+for the `arklight://` scheme. See `backend/README.md` for the full
+endpoint table.
+
+## Workbench integration
+
+`extensions/arklight-fs` registers a `FileSystemProvider` and
+file/text search providers for the `arklight://` scheme, backed by
+`backend/`. `src/vs/code/browser/workbench/workbench.ts` defaults to
+opening the virtual `arklight:/project` folder when no explicit
+folder/workspace URI is passed in, so the workbench boots straight
+into whatever directory the backend's `WORKSPACE_ROOT` points at.
+Configure the backend URL via the `arklight.backendUrl` setting
+(default `http://localhost:5000`).
 
 ## Status
 
-Stage 0 (verified working browser build) and the pruning batches are
-done. Stage 2 — a custom `FileSystemProvider` in the workbench source
-talking to `backend/`, and a `workspaceProvider` pointing at a virtual
-`arklight:/project` — has not started yet. See the "Still open" section
-of `AUTOMATION.md`.
+Done: Stage 0 (verified working browser build), the pruning batches,
+Stage 1 (branch split), Stage 2 (`arklight-fs` FileSystemProvider +
+`workspaceProvider` wiring), and Stage 3 (SSE file watching,
+optimistic-concurrency writes, file/text search providers).
+
+Not started: everything from Stage 4 onward. See `ROADMAP.md` for
+what's next, including a stage on building small, dependency-free
+(Python-standard-library-only) statistical helpers — fuzzy
+component/file search, human-readable error messages, and some
+"old-school chatbot" tricks (Markov chains, bag-of-words, n-gram
+models) applied to developer-tooling problems instead of chat.
 
 ## License
 

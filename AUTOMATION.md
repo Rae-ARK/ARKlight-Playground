@@ -97,15 +97,32 @@ was restored on a separate `application` branch, alongside the same
 `out/vs`. All further work, including the items below, happens on
 `application`. Don't extend `main`.
 
-The minimal Flask backend (`backend/app.py`) now exists, exposing
-`/workspace/files` and `/workspace/file/<path>` for list/read/write.
-See `backend/README.md`. It is not yet wired into the workbench.
+The Flask backend (`backend/app.py`) exists and is now fully wired
+into the workbench: `extensions/arklight-fs` registers a
+FileSystemProvider for the `arklight://` scheme backed by the API,
+and `src/vs/code/browser/workbench/workbench.ts` defaults to opening
+`arklight:/project` when no explicit folder/workspace is configured.
+See `backend/README.md` and `ROADMAP.md`.
 
-## Still open (not yet done as of this log)
+## Done since this log was written
 
-- [ ] `workspaceProvider` pointing at a virtual `arklight:/project`
-      folder (Stage 2 of the staged plan, not started).
-- [ ] The bundled web extension registering a FileSystemProvider
-      backed by the Flask backend -- the backend itself exists
-      (`backend/app.py`) but nothing in `src/vs/platform/files/**`
-      calls it yet.
+- [x] `workspaceProvider` pointing at a virtual `arklight:/project`
+      folder (Stage 2).
+- [x] The bundled web extension (`arklight-fs`) registering a
+      FileSystemProvider backed by the Flask backend.
+- [x] SSE-based file watching (`GET /workspace/watch`), optimistic-
+      concurrency writes (`If-Unmodified-Since-Mtime`), and file/text
+      search providers (Stage 3).
+
+**Rebuild reminder:** `out/vs` in this branch was compiled *before*
+Stage 2/3, so it does not contain `arklight-fs`. Re-run
+`compile-client` + `compile-web` after any change to
+`extensions/arklight-fs` or `backend/app.py`'s contract before
+trusting a served build.
+
+## Still open
+
+See `ROADMAP.md` for the current staged plan (Stage 4 onward) --
+backend hardening (auth, real filesystem-event watching), editor
+features (terminal, multi-root workspaces), and a stdlib-only
+statistical tooling stage (fuzzy search, human-readable errors).
