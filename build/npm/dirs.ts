@@ -7,6 +7,13 @@ import { existsSync } from 'fs';
 
 /**
  * Complete list of directories where npm should be executed to install node modules
+ *
+ * ARKlight note: trimmed down from the stock Code - OSS list to match what
+ * actually survives PRUNE-PLAN.md's batches -- the stock list still had ~40
+ * entries (extensions/git, extensions/copilot, test/*, .vscode/extensions/*,
+ * etc.) pointing at directories that no longer exist in this fork, which made
+ * every `npm install` fail with a wall of "spawn /bin/sh ENOENT" once the
+ * parallel install sweep reached them.
  */
 export const dirs = [
 	'',
@@ -14,56 +21,22 @@ export const dirs = [
 	'build/rspack',
 	'build/vite',
 	'extensions',
-	'extensions/configuration-editing',
-	'extensions/copilot',
-	'extensions/css-language-features',
-	'extensions/css-language-features/server',
-	'extensions/debug-auto-launch',
-	'extensions/debug-server-ready',
-	'extensions/emmet',
-	'extensions/extension-editing',
-	'extensions/git',
-	'extensions/git-base',
-	'extensions/github',
-	'extensions/github-authentication',
-	'extensions/grunt',
-	'extensions/gulp',
-	'extensions/html-language-features',
-	'extensions/html-language-features/server',
-	'extensions/ipynb',
-	'extensions/jake',
-	'extensions/json-language-features',
-	'extensions/json-language-features/server',
-	'extensions/markdown-language-features',
-	'extensions/markdown-math',
+	'extensions/arklight-fs',
+	'extensions/css',
+	'extensions/html',
+	'extensions/javascript',
+	'extensions/json',
+	'extensions/markdown-basics',
 	'extensions/media-preview',
 	'extensions/merge-conflict',
-	'extensions/mermaid-markdown-features',
-	'extensions/microsoft-authentication',
-	'extensions/notebook-renderers',
-	'extensions/npm',
-	'extensions/php-language-features',
+	'extensions/pug',
+	'extensions/python',
 	'extensions/references-view',
 	'extensions/search-result',
 	'extensions/simple-browser',
-	'extensions/tunnel-forwarding',
-	'extensions/terminal-suggest',
-	'extensions/typescript-language-features',
-	'extensions/vscode-api-tests',
-	'extensions/vscode-colorize-tests',
-	'extensions/vscode-colorize-perf-tests',
-	'extensions/vscode-test-resolver',
+	'extensions/theme-defaults',
 	'remote',
 	'remote/web',
-	'test/automation',
-	'test/integration/browser',
-	'test/monaco',
-	'test/smoke',
-	'test/mcp',
-	'.vscode/extensions/vscode-selfhost-import-aid',
-	'.vscode/extensions/vscode-selfhost-test-provider',
-	'.vscode/extensions/vscode-extras',
-	'.vscode/extensions/vscode-pr-pinger',
 ];
 
 if (existsSync(`${import.meta.dirname}/../../.build/distro/npm`)) {
