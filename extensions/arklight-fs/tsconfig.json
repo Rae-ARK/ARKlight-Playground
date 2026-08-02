@@ -12,6 +12,8 @@
 	},
 	"include": [
 		"src/**/*",
-		"../../src/vscode-dts/vscode.d.ts"
+		"../../src/vscode-dts/vscode.d.ts",
+		"../../src/vscode-dts/vscode.proposed.fileSearchProvider2.d.ts",
+		"../../src/vscode-dts/vscode.proposed.textSearchProvider2.d.ts"
 	]
 }

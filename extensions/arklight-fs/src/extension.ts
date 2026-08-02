@@ -4,27 +4,33 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from 'vscode';
 import { ArklightFileSystemProvider } from './arklightFileSystemProvider';
-
-const SCHEME = 'arklight';
+import { ArklightSearchProvider } from './arklightSearchProvider';
+import { SCHEME } from './arklightPaths';
 
 function getBackendUrl(): string {
 	return vscode.workspace.getConfiguration('arklight').get<string>('backendUrl', 'http://localhost:5000');
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-	const provider = new ArklightFileSystemProvider(getBackendUrl());
+	const fileSystemProvider = new ArklightFileSystemProvider(getBackendUrl());
+	const searchProvider = new ArklightSearchProvider(getBackendUrl());
 
 	context.subscriptions.push(
-		vscode.workspace.registerFileSystemProvider(SCHEME, provider, {
+		vscode.workspace.registerFileSystemProvider(SCHEME, fileSystemProvider, {
 			isCaseSensitive: true,
 			isReadonly: false,
 		})
 	);
+	context.subscriptions.push(vscode.workspace.registerFileSearchProvider2(SCHEME, searchProvider));
+	context.subscriptions.push(vscode.workspace.registerTextSearchProvider2(SCHEME, searchProvider));
+	context.subscriptions.push(new vscode.Disposable(() => fileSystemProvider.dispose()));
 
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(event => {
 			if (event.affectsConfiguration('arklight.backendUrl')) {
-				provider.updateBackendUrl(getBackendUrl());
+				const backendUrl = getBackendUrl();
+				fileSystemProvider.updateBackendUrl(backendUrl);
+				searchProvider.updateBackendUrl(backendUrl);
 			}
 		})
 	);

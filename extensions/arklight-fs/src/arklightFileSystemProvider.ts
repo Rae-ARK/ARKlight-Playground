@@ -3,9 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from 'vscode';
-
-/** Root path inside the arklight:// scheme that maps to WORKSPACE_ROOT on the backend. */
-const ROOT_PATH = '/project';
+import { toRelativePath, toUri } from './arklightPaths';
 
 interface BackendStatEntry {
 	path: string;
@@ -15,17 +13,10 @@ interface BackendStatEntry {
 	ctime: number; // seconds since epoch, float
 }
 
-function toRelativePath(uri: vscode.Uri): string {
-	let p = uri.path;
-	if (p === ROOT_PATH) {
-		return '';
-	}
-	if (p.startsWith(ROOT_PATH + '/')) {
-		p = p.slice(ROOT_PATH.length + 1);
-	} else if (p.startsWith('/')) {
-		p = p.slice(1);
-	}
-	return p;
+interface BackendWatchEvent {
+	type: 'created' | 'changed' | 'deleted';
+	path: string;
+	kind: 'file' | 'directory';
 }
 
 function toFileType(entry: Pick<BackendStatEntry, 'type'>): vscode.FileType {
@@ -41,7 +32,7 @@ async function parseErrorBody(response: Response): Promise<string> {
 	}
 }
 
-function toFileSystemError(uri: vscode.Uri, status: number, message: string): vscode.FileSystemError {
+function toFileSystemError(uri: vscode.Uri, status: number, message: string): vscode.FileSystemError | Error {
 	switch (status) {
 		case 404:
 			return vscode.FileSystemError.FileNotFound(uri);
@@ -49,6 +40,11 @@ function toFileSystemError(uri: vscode.Uri, status: number, message: string): vs
 			return vscode.FileSystemError.FileExists(uri);
 		case 403:
 			return vscode.FileSystemError.NoPermissions(uri);
+		case 412:
+			// Optimistic-concurrency conflict: the file changed on disk since
+			// it was last read by this client. There's no stable FileSystemError
+			// factory for this, so surface it as a plain error with a clear message.
+			return new Error(`ARKlight: ${uri.toString()} changed on disk since it was last read. Reload the file before saving again. (${message})`);
 		default:
 			return vscode.FileSystemError.Unavailable(message || uri.toString());
 	}
@@ -59,10 +55,24 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 	private readonly _onDidChangeFile = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
+	/** Last known mtime (seconds, float, as reported by the backend) per watched uri, used for optimistic-concurrency checks on write. */
+	private readonly mtimeCache = new Map<string, number>();
+
+	private eventSource: EventSource | undefined;
+	private watcherRefCount = 0;
+
 	constructor(private backendUrl: string) { }
 
 	updateBackendUrl(backendUrl: string): void {
 		this.backendUrl = backendUrl;
+		if (this.eventSource) {
+			this.stopWatching();
+			this.startWatching();
+		}
+	}
+
+	dispose(): void {
+		this.stopWatching();
 	}
 
 	private endpoint(relativePath: string, kind: 'file' | 'dir' | 'stat'): string {
@@ -81,14 +91,60 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 		return response;
 	}
 
-	// -- watch -------------------------------------------------------------
-	// No live change notifications yet (see backend/README.md "Next steps");
-	// clients that call watch() get a no-op subscription for now.
+	// -- watch ---------------------------------------------------------------
+	// The backend only exposes a single, workspace-wide change stream
+	// (GET /workspace/watch, server-sent events), so every watch() request
+	// shares one connection; per-uri/recursive filtering isn't attempted here.
 	watch(_uri: vscode.Uri, _options: { readonly recursive: boolean; readonly excludes: readonly string[] }): vscode.Disposable {
-		return new vscode.Disposable(() => { });
+		this.startWatching();
+		this.watcherRefCount++;
+
+		return new vscode.Disposable(() => {
+			this.watcherRefCount--;
+			if (this.watcherRefCount <= 0) {
+				this.stopWatching();
+			}
+		});
 	}
 
-	// -- stat ----------------------------------------------------------------
+	private startWatching(): void {
+		if (this.eventSource || typeof EventSource === 'undefined') {
+			return;
+		}
+
+		const base = this.backendUrl.replace(/\/+$/, '');
+		const source = new EventSource(`${base}/workspace/watch`);
+		source.onmessage = event => {
+			let payload: BackendWatchEvent;
+			try {
+				payload = JSON.parse(event.data) as BackendWatchEvent;
+			} catch {
+				return; // ignore malformed events
+			}
+
+			const uri = toUri(payload.path);
+			const type = payload.type === 'created' ? vscode.FileChangeType.Created
+				: payload.type === 'deleted' ? vscode.FileChangeType.Deleted
+					: vscode.FileChangeType.Changed;
+
+			if (payload.type === 'deleted') {
+				this.mtimeCache.delete(uri.toString());
+			}
+
+			this._onDidChangeFile.fire([{ type, uri }]);
+		};
+		// EventSource reconnects on its own after a transient error; nothing to do here.
+		source.onerror = () => { };
+
+		this.eventSource = source;
+	}
+
+	private stopWatching(): void {
+		this.eventSource?.close();
+		this.eventSource = undefined;
+	}
+
+	// -- stat ------------------------------------------------------------------
 	async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
 		const rel = toRelativePath(uri);
 		if (rel === '') {
@@ -102,6 +158,7 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 			throw toFileSystemError(uri, response.status, await parseErrorBody(response));
 		}
 		const entry = await response.json() as BackendStatEntry;
+		this.mtimeCache.set(uri.toString(), entry.mtime);
 		return {
 			type: toFileType(entry),
 			ctime: Math.round(entry.ctime * 1000),
@@ -110,7 +167,7 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 		};
 	}
 
-	// -- directories -----------------------------------------------------------
+	// -- directories -------------------------------------------------------------
 	async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
 		const rel = toRelativePath(uri);
 		const response = await this.request(this.endpoint(rel, 'dir'));
@@ -133,12 +190,16 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 		this._onDidChangeFile.fire([{ type: vscode.FileChangeType.Created, uri }]);
 	}
 
-	// -- files -------------------------------------------------------------
+	// -- files ---------------------------------------------------------------
 	async readFile(uri: vscode.Uri): Promise<Uint8Array> {
 		const rel = toRelativePath(uri);
 		const response = await this.request(this.endpoint(rel, 'file'));
 		if (!response.ok) {
 			throw toFileSystemError(uri, response.status, await parseErrorBody(response));
+		}
+		const mtimeHeader = response.headers.get('X-Mtime');
+		if (mtimeHeader) {
+			this.mtimeCache.set(uri.toString(), parseFloat(mtimeHeader));
 		}
 		const buffer = await response.arrayBuffer();
 		return new Uint8Array(buffer);
@@ -161,12 +222,26 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 			throw vscode.FileSystemError.FileExists(uri);
 		}
 
+		const headers: Record<string, string> = {};
+		const knownMtime = this.mtimeCache.get(uri.toString());
+		if (existed && knownMtime !== undefined) {
+			// Ask the backend to reject the write with 412 if the file changed
+			// on disk since we last read/stat'd it (see backend/app.py PUT handler).
+			headers['If-Unmodified-Since-Mtime'] = String(knownMtime);
+		}
+
 		const response = await this.request(this.endpoint(rel, 'file'), {
 			method: 'PUT',
+			headers,
 			body: content,
 		});
 		if (!response.ok) {
 			throw toFileSystemError(uri, response.status, await parseErrorBody(response));
+		}
+
+		const body = await response.json() as { mtime?: number };
+		if (typeof body.mtime === 'number') {
+			this.mtimeCache.set(uri.toString(), body.mtime);
 		}
 
 		this._onDidChangeFile.fire([{ type: existed ? vscode.FileChangeType.Changed : vscode.FileChangeType.Created, uri }]);
@@ -178,6 +253,7 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 		if (!response.ok) {
 			throw toFileSystemError(uri, response.status, await parseErrorBody(response));
 		}
+		this.mtimeCache.delete(uri.toString());
 		this._onDidChangeFile.fire([{ type: vscode.FileChangeType.Deleted, uri }]);
 	}
 
@@ -205,6 +281,7 @@ export class ArklightFileSystemProvider implements vscode.FileSystemProvider {
 			throw toFileSystemError(oldUri, response.status, await parseErrorBody(response));
 		}
 
+		this.mtimeCache.delete(oldUri.toString());
 		this._onDidChangeFile.fire([
 			{ type: vscode.FileChangeType.Deleted, uri: oldUri },
 			{ type: vscode.FileChangeType.Created, uri: newUri },

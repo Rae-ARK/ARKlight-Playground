@@ -6,5 +6,11 @@
   "urlProtocol": "arklight-ide",
   "licenseName": "MIT",
   "licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
-  "reportIssueUrl": "https://github.com/microsoft/vscode/issues/new"
+  "reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
+  "extensionEnabledApiProposals": {
+    "arklight.arklight-fs": [
+      "fileSearchProvider2",
+      "textSearchProvider2"
+    ]
+  }
 }

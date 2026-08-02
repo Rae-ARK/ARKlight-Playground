@@ -8,6 +8,10 @@
   "engines": {
     "vscode": "^1.70.0"
   },
+  "enabledApiProposals": [
+    "fileSearchProvider2",
+    "textSearchProvider2"
+  ],
   "main": "./out/extension",
   "browser": "./dist/browser/extension",
   "categories": [

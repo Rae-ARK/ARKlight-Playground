@@ -32,8 +32,12 @@ Endpoints:
     GET    /healthz                        -> liveness
 """
 
+import json
 import os
+import queue
 import shutil
+import threading
+import time
 from pathlib import Path
 
 from flask import Flask, jsonify, request, abort, Response
@@ -45,12 +49,15 @@ WORKSPACE_ROOT.mkdir(parents=True, exist_ok=True)
 
 READONLY = os.environ.get("ARKLIGHT_READONLY") == "1"
 MAX_READ_BYTES = int(os.environ.get("ARKLIGHT_MAX_READ_BYTES", 20 * 1024 * 1024))
+WATCH_POLL_INTERVAL = float(os.environ.get("ARKLIGHT_WATCH_POLL_INTERVAL", "1.0"))
 
-# directories skipped everywhere we walk the tree (listing, search)
+# directories skipped everywhere we walk the tree (listing, search, watch)
 NOISE_DIRS = {".git", "node_modules", "__pycache__"}
 
 app = Flask(__name__)
-CORS(app)  # the workbench runs on a different origin (localhost:PORT vs file/webview)
+# the workbench runs on a different origin (localhost:PORT vs file/webview);
+# X-Mtime has to be explicitly exposed or browser JS can't read it off the response
+CORS(app, expose_headers=["X-Mtime"])
 
 
 @app.errorhandler(HTTPException)
@@ -84,6 +91,93 @@ def _stat_entry(path: Path, rel: str) -> dict:
         "mtime": st.st_mtime,
         "ctime": st.st_ctime,
     }
+
+
+_watch_lock = threading.Lock()
+_watch_subscribers = []  # type: list[queue.Queue]
+
+
+def _walk_snapshot() -> dict:
+    """path -> (kind, mtime) for every file/dir under WORKSPACE_ROOT."""
+    snapshot = {}
+    for root, dirs, files in os.walk(WORKSPACE_ROOT):
+        dirs[:] = [d for d in dirs if d not in NOISE_DIRS]
+        rel_root = Path(root).relative_to(WORKSPACE_ROOT)
+        for d in dirs:
+            p = str(rel_root / d) if str(rel_root) != "." else d
+            try:
+                snapshot[p] = ("directory", (Path(root) / d).stat().st_mtime)
+            except OSError:
+                continue
+        for f in files:
+            p = str(rel_root / f) if str(rel_root) != "." else f
+            try:
+                snapshot[p] = ("file", (Path(root) / f).stat().st_mtime)
+            except OSError:
+                continue
+    return snapshot
+
+
+def _publish(event: dict) -> None:
+    with _watch_lock:
+        subscribers = list(_watch_subscribers)
+    for q in subscribers:
+        q.put(event)
+
+
+def _watch_poll_loop() -> None:
+    """
+    Background thread: periodically re-walks WORKSPACE_ROOT and diffs against
+    the previous snapshot to synthesize created/changed/deleted events. Simple
+    on purpose -- a real filesystem-notification backend (inotify/watchdog)
+    is the natural next step once this contract is proven out.
+    """
+    previous = _walk_snapshot()
+    while True:
+        time.sleep(WATCH_POLL_INTERVAL)
+        try:
+            current = _walk_snapshot()
+        except OSError:
+            continue
+
+        for path, (kind, mtime) in current.items():
+            if path not in previous:
+                _publish({"type": "created", "path": path, "kind": kind})
+            elif previous[path][1] != mtime:
+                _publish({"type": "changed", "path": path, "kind": kind})
+        for path, (kind, _mtime) in previous.items():
+            if path not in current:
+                _publish({"type": "deleted", "path": path, "kind": kind})
+
+        previous = current
+
+
+threading.Thread(target=_watch_poll_loop, daemon=True).start()
+
+
+@app.route("/workspace/watch", methods=["GET"])
+def watch():
+    """
+    Server-Sent Events stream of filesystem change events, polled every
+    ARKLIGHT_WATCH_POLL_INTERVAL seconds (default 1s). Each event is a JSON
+    object: {"type": "created"|"changed"|"deleted", "path": ..., "kind": "file"|"directory"}.
+    """
+    client_queue: "queue.Queue[dict]" = queue.Queue()
+    with _watch_lock:
+        _watch_subscribers.append(client_queue)
+
+    def stream():
+        try:
+            yield "retry: 2000\n\n"
+            while True:
+                event = client_queue.get()
+                yield f"data: {json.dumps(event)}\n\n"
+        finally:
+            with _watch_lock:
+                if client_queue in _watch_subscribers:
+                    _watch_subscribers.remove(client_queue)
+
+    return Response(stream(), mimetype="text/event-stream")
 
 
 @app.route("/workspace/files", methods=["GET"])
@@ -149,17 +243,41 @@ def read_file(relative_path):
     # text-vs-binary client-side (as the previous version did server-side
     # by attempting a UTF-8 decode) is more predictable for a
     # FileSystemProvider, which always wants a Uint8Array anyway.
-    return Response(target.read_bytes(), mimetype="application/octet-stream")
+    response = Response(target.read_bytes(), mimetype="application/octet-stream")
+    response.headers["X-Mtime"] = str(target.stat().st_mtime)
+    return response
 
 
 @app.route("/workspace/file/<path:relative_path>", methods=["PUT"])
 def write_file(relative_path):
     _require_write_access()
     target = _resolve(relative_path)
+
+    # Optimistic concurrency: a client that previously read/stat'd this file
+    # can send back the mtime it saw. If the file has since changed on disk,
+    # reject the write instead of silently clobbering someone else's edit.
+    expected_mtime_header = request.headers.get("If-Unmodified-Since-Mtime")
+    if expected_mtime_header is not None and target.exists():
+        try:
+            expected_mtime = float(expected_mtime_header)
+        except ValueError:
+            expected_mtime = None
+        if expected_mtime is not None and abs(target.stat().st_mtime - expected_mtime) > 1e-6:
+            return jsonify({
+                "error": "Conflict",
+                "message": "file changed on disk since it was last read",
+                "currentMtime": target.stat().st_mtime,
+            }), 412
+
     target.parent.mkdir(parents=True, exist_ok=True)
     body = request.get_data()
     target.write_bytes(body)
-    return jsonify({"path": relative_path, "status": "written", "bytes": len(body)})
+    return jsonify({
+        "path": relative_path,
+        "status": "written",
+        "bytes": len(body),
+        "mtime": target.stat().st_mtime,
+    })
 
 
 @app.route("/workspace/file/<path:relative_path>", methods=["POST"])
@@ -256,8 +374,14 @@ def search():
                 continue
             rel = str(fpath.relative_to(WORKSPACE_ROOT))
             for lineno, line in enumerate(text.splitlines(), start=1):
-                if needle in line.lower():
-                    matches.append({"path": rel, "line": lineno, "text": line.strip()[:300]})
+                column = line.lower().find(needle)
+                if column != -1:
+                    matches.append({
+                        "path": rel,
+                        "line": lineno,
+                        "column": column,
+                        "text": line[:300],
+                    })
                     if len(matches) >= limit:
                         break
         if len(matches) >= limit:
@@ -276,4 +400,4 @@ def healthz():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=os.environ.get("DEBUG") == "1")
+    app.run(host="0.0.0.0", port=port, debug=os.environ.get("DEBUG") == "1", threaded=True)
