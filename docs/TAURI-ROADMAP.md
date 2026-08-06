@@ -1,9 +1,12 @@
 # Tauri port — Roadmap
 
-Companion to the root `ROADMAP.md`, which covers the browser build.
-This file is the single source of truth for the native-shell effort
-on `tauri-port`. Same rule applies: stage status lives here, not
-duplicated across READMEs.
+Companion to the root `ROADMAP.md`, which covers the browser build,
+and to `ARCHITECTURE.md`, which covers how the two shells fit
+together and lays out the Stage 2 IPC design in full. This file is
+the single source of truth for *stage status* on `tauri-port` — for
+the shape of Stage 2 itself (command table, error kinds, the
+extension reuse-vs-fork question), see `ARCHITECTURE.md` rather than
+duplicating it here.
 
 ## Why a native shell, and why not yet an FS rewrite
 
@@ -90,23 +93,49 @@ integration.
 
 ## Stage 2 — Real files, no Flask at all
 
-- [ ] `#[tauri::command]` fs backend (list/stat/read/write/create/
-      delete/rename/copy) operating directly on disk via `std::fs` —
-      written fresh against Tauri's IPC shape, not a port of
-      `backend/app.py`'s REST contract, since there's no HTTP layer
-      to preserve compatibility with anymore.
+Design is now specified in full in `ARCHITECTURE.md` (command table,
+error-kind enum, mtime-conflict semantics, watcher approach) — this
+list tracks build/implementation status against that spec, not the
+design itself.
+
+- [ ] **Resolve the extension reuse-vs-fork question first.**
+      `ARCHITECTURE.md`'s "Open question Stage 2 has to resolve"
+      section lays out both paths (fork `arklight-fs` into a
+      Tauri-specific sibling extension vs. a standalone
+      `workspaceProvider`-level hook against `app/`'s bundled entry
+      point) and their tradeoffs. Nothing below should start until
+      one is picked — it changes where the TS file in the next item
+      actually lives and how it's built.
+- [ ] `#[tauri::command]` fs backend (`fs_stat`, `fs_list_dir`,
+      `fs_create_dir`, `fs_read_file`, `fs_write_file`, `fs_delete`,
+      `fs_rename`, `fs_copy`, `fs_list_all`, `fs_search_text`)
+      operating directly on disk via `std::fs`, plus a shared
+      `FsError` enum (`FileNotFound`/`FileExists`/`NoPermissions`/
+      `Conflict`/`Invalid`/`Unavailable`) and path-escape resolution
+      equivalent to Flask's `_resolve()`. Field names/units for stat
+      data (`path`/`type`/`size`/`mtime`/`ctime`, mtime as
+      seconds-since-epoch float) intentionally match the Flask
+      contract — see `ARCHITECTURE.md`'s command table.
 - [ ] A `FileSystemProvider` for the `arklight://` scheme that calls
-      `window.__TAURI__.core.invoke(...)` instead of `fetch()`.
-      Whether this reuses/forks `extensions/arklight-fs` or is
-      written standalone against the lean `app/` bundle is an open
-      question — the extension as it exists targets the full
-      `application` source tree's build pipeline, which this branch
-      is deliberately not carrying forward.
-- [ ] Native file-change events (Tauri's `notify`-backed watcher)
-      instead of polling.
+      `window.__TAURI__.core.invoke(...)` instead of `fetch()`, with
+      `toFileSystemError()`-equivalent mapping from `FsError.kind`
+      instead of HTTP status. Where it lives depends on the item
+      above.
+- [ ] Native file-change events: a `notify`-backed watcher emitting
+      `arklight://fs-change` via `app.emit(...)`, with the JS side
+      `listen()`-ing instead of holding an `EventSource`. Real
+      inotify/FSEvents/ReadDirectoryChangesW under the hood, not the
+      Flask backend's 1s poll-and-diff loop — a genuine latency/cost
+      improvement, not just a transport swap.
 - [ ] `backend/app.py` stays exactly as-is for anyone who still wants
       the browser-hosted build (`application` branch) — this port
       doesn't touch or deprecate it, it just doesn't depend on it.
+- [ ] Explicitly deferred out of Stage 2: the Stage 5 NLP helpers
+      (`/workspace/search/fuzzy`, `/workspace/explain-error`,
+      `/workspace/search/suggest` in `backend/nlp_tools.py`) are not
+      being ported yet. They're stdlib-only conveniences, not part of
+      the core `FileSystemProvider` contract — still available on the
+      browser build in the meantime.
 
 ## Stage 3 — Compiler integration
 
