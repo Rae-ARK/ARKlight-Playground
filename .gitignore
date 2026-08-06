@@ -50,3 +50,6 @@ dist
 .agents/skills/.local/
 .github/skills/.local/
 *.patch
+# Stage 1 Tauri port: generated static workbench bundle, see docs/BUILD-WEB-BUNDLE.md
+/app/
+/src-tauri/target/

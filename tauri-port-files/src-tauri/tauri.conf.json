@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ARKlight Playground",
+  "version": "0.1.0",
+  "identifier": "dev.arklight.playground",
+
+  "build": {
+    "frontendDist": "../app"
+  },
+
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "ARKlight Playground",
+        "url": "index.html",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 720,
+        "minHeight": 480
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+
+  "bundle": {
+    "active": false,
+    "targets": []
+  }
+}
