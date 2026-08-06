@@ -1,240 +1,135 @@
-# Architecture
+# ARKlight IDE — Bare-Bones MVP Plan
 
-Single source of truth for **how the pieces fit together**, across both
-shells this project ships. Stage status belongs in `ROADMAP.md` (browser)
-and `TAURI-ROADMAP.md` (native) — this file doesn't duplicate that, it
-explains the shape those stages are filling in.
+Living plan for the smallest thing that proves "Code OSS web workbench
++ Flask + arklight compiler" actually works end to end. Each stage has
+a Definition of Done. Do not start a stage until the previous one's DoD
+is checked off — the whole point of staging this is to find out where
+it breaks before sinking time into the next layer.
 
-## Two products, one workbench
+## Scope freeze
 
-This is not one app with an optional backend. It's two products that
-happen to share a UI layer:
+**In:**
+- Single user, single project, local machine only. No auth, no
+  accounts, no multi-tenancy.
+- One virtual workspace folder (`arklight:/project`) backed entirely
+  by the Flask process — nothing touches the real filesystem except
+  Flask itself.
+- Editing `.py` site files, triggering a build, seeing the compiled
+  output (or the compile error).
+- Text editor, file explorer, command to run `arklight build`, a way
+  to view the result.
 
-| | Browser shell (`application` branch) | Native shell (`tauri-port` branch) |
-|---|---|---|
-| Ships as | a page you point a browser at | an installed binary |
-| Runs where | wherever you host `backend/` + serve the compiled workbench | on the user's machine |
-| Filesystem owner | `backend/app.py` (Flask), reached over HTTP | the Rust process itself, reached over Tauri IPC |
-| Multi-user / remote | yes — that's the point | no — single user, local disk |
-| Long-lived processes at runtime | Node (dev server) or any static host + Python | one native binary, nothing else |
+**Out (for MVP — revisit later, not now):**
+- Terminal, tasks, debugger.
+- Extension Marketplace / extension gallery.
+- User data sync, telemetry, secret storage, update checks,
+  authentication providers, tunneling.
+- `pack` / `unpack` / `.ark` bundles, PWA mode, `arklight new` scaffold
+  templates.
+- Multi-file drag/drop, multi-root workspaces, anything resembling
+  workspace trust prompts.
 
-Both compile the *same* workbench source (`src/`, `extensions/`) — a
-pruned Code-OSS tree. What differs is what sits underneath
-`vscode.workspace.fs` for the `arklight://` scheme: an HTTP client
-talking to Flask, or (once Stage 2 lands) a thin IPC client talking to
-Rust. Everything above that line — editor, tabs, explorer, command
-palette, search UI — is identical in both shells, unmodified.
+If a stage tempts you to build one of the "Out" items to make
+something else feel nicer, don't. Note it and move on.
 
-```
-                         ┌─────────────────────────────┐
-                         │   Workbench (src/, Monaco)   │
-                         │  identical in both shells    │
-                         └───────────────┬───────────────┘
-                                          │ vscode.workspace.fs
-                                          │  (arklight:// scheme)
-                         ┌───────────────┴───────────────┐
-                         │      arklight-fs extension      │
-                         │  FileSystemProvider + search    │
-                         └───────────────┬───────────────┘
-                    ┌─────────────────────┴─────────────────────┐
-                    │                                             │
-           browser shell: fetch()/SSE                   native shell: invoke()/event
-                    │                                             │
-        ┌───────────┴───────────┐                     ┌───────────┴───────────┐
-        │   backend/app.py       │                     │  src-tauri Rust core   │
-        │   Flask, HTTP+SSE       │                     │  #[tauri::command]s    │
-        │   over localhost:5000   │                     │  in-process, no HTTP   │
-        └───────────┬───────────┘                     └───────────┬───────────┘
-                    │ std filesystem calls                        │ std::fs / notify
-                    ▼                                              ▼
-              WORKSPACE_ROOT on disk                     workspace root on disk
-```
+---
 
-## The shared contract: `vscode.FileSystemProvider`
+## Stage 0 — Confirm the two halves independently
 
-Everything downstream of the workbench is in service of one VS Code
-extension API surface — `vscode.FileSystemProvider`, registered for the
-custom `arklight://` scheme in `extensions/arklight-fs/src/extension.ts`.
-That interface is the real architectural boundary in this project: as
-long as *something* implements `stat`, `readDirectory`, `readFile`,
-`writeFile`, `delete`, `rename`, `copy`, `createDirectory`, and
-`onDidChangeFile`, the workbench above it doesn't know or care whether
-the implementation is making `fetch()` calls to Flask or `invoke()`
-calls to Rust.
+**Goal:** no integration yet. Prove each half works alone.
 
-`extensions/arklight-fs/src/arklightPaths.ts` defines the other half of
-the contract both shells share: every `arklight:/project/...` URI maps
-to a path relative to one workspace root, with `''` meaning the root
-itself. That mapping is shell-agnostic and doesn't change between
-branches.
+- [ ] `arklight` installs (`pip install -e .`) and `arklight build
+      site.py -o ARK` works from a plain terminal on a throwaway
+      example site.
+- [ ] Trimmed `product.json` (no `extensionsGallery` key) + the stock
+      `workbench.web.main.ts` boots in a browser with **no**
+      `workspaceProvider` supplied at all — confirms the empty-window
+      fallback (`UNKNOWN_EMPTY_WINDOW_WORKSPACE`) actually renders and
+      nothing throws.
 
-## Browser shell: what's actually implemented (`application`)
+**DoD:** a compiled site sitting on disk from the CLI, and a blank
+Code OSS shell loading in a tab, on the same day, with zero wiring
+between them yet.
 
-Concrete today, not aspirational — this is what `backend/app.py` +
-`arklightFileSystemProvider.ts` do.
+---
 
-| FileSystemProvider method | HTTP call | Flask handler |
-|---|---|---|
-| `stat` | `GET /workspace/stat/<path>` | `stat_path` |
-| `readDirectory` | `GET /workspace/dir/<path>` | `list_dir` |
-| `createDirectory` | `POST /workspace/dir/<path>` | `create_dir` |
-| `readFile` | `GET /workspace/file/<path>` | `read_file` |
-| `writeFile` | `PUT /workspace/file/<path>` (+ `If-Unmodified-Since-Mtime`) | `write_file` |
-| `delete` | `DELETE /workspace/file/<path>` | `delete_file` |
-| `rename` | `PATCH /workspace/file/<path>` (`{newPath}`) | `rename_file` |
-| `copy` | `POST /workspace/copy` (`{from, to}`) | `copy_path` |
-| `onDidChangeFile` | `EventSource` on `GET /workspace/watch` (SSE) | `watch`, fed by a 1s poll-and-diff loop |
-| file search | `GET /workspace/files` (full recursive listing, filtered client-side) | `list_files` |
-| text search | `GET /workspace/search?q=` | `search` |
+## Stage 1 — Flask backend: the entire contract, nothing else
 
-Notable properties of this implementation, since they set the bar
-Stage 2 has to clear or consciously drop:
+**Goal:** every file operation and every compiler action the frontend
+will ever call, callable directly with `curl` first — before any
+browser code exists.
 
-- **Optimistic concurrency.** `writeFile` sends the last-known mtime as
-  `If-Unmodified-Since-Mtime`; Flask 412s if the on-disk mtime has since
-  moved, and the provider surfaces that as a plain `Error` (there's no
-  `vscode.FileSystemError` code for "conflict").
-- **Path-escape rejection.** Flask's `_resolve()` resolves every
-  client-supplied relative path against `WORKSPACE_ROOT` and 400s
-  anything that resolves outside it.
-- **Change events are polled, not pushed.** `_watch_poll_loop` re-walks
-  the whole tree every `ARKLIGHT_WATCH_POLL_INTERVAL` seconds (default
-  1s) and diffs against the previous snapshot — a placeholder, not real
-  inotify/FSEvents.
-- **One shared watch connection.** The backend exposes a single
-  workspace-wide SSE stream; the provider doesn't do per-uri or
-  recursive filtering, it just re-emits everything server-side and lets
-  the workbench filter.
-- **Read-only mode, size caps, error-JSON-not-HTML** are backend-level
-  policy (`ARKLIGHT_READONLY`, `ARKLIGHT_MAX_READ_BYTES`), invisible to
-  the provider except as ordinary HTTP status codes.
+Wraps the compiler's existing entry points directly rather than
+re-implementing anything:
+- `arklight.compiler.pipeline.build(entry, output)` → `BuildResult`
+  (raises `CompileError` on failure)
+- later, if/when `pack`/`unpack` come back into scope:
+  `arklight.packer.bundle.pack` / `unpack` (raise `PackError`)
 
-## Native shell: where it stands (`tauri-port`)
+Project state for the MVP is just a directory on disk that Flask
+owns (e.g. a temp dir per run) — no database, no session model.
 
-**Stage 1 (done):** `src-tauri/` boots a Tauri window pointed at a
-self-contained static bundle (`app/` — see `BUILD-WEB-BUNDLE.md`).
-Zero `#[tauri::command]`s are registered. No Flask, no Node, no Python
-process runs. The window shows workbench chrome with no workspace
-open — same as `vscode.dev` with no folder. That's the entire scope;
-there is no filesystem story yet at all.
+Endpoints:
+- `GET  /api/files` — list of paths in the project dir
+- `GET  /api/file/<path>` — file contents
+- `PUT  /api/file/<path>` — overwrite file contents
+- `POST /api/build` — runs `build()` against the project's entry file,
+  returns either the list of written paths + a preview URL, or the
+  `CompileError` message with whatever position/line info it carries
 
-**Stage 2 (next, not started): design.** This is the part this doc
-exists to pin down before code gets written. The target is a Rust
-implementation of the same contract, called over Tauri's IPC instead
-of HTTP, with no server process and no REST envelope in between.
+**DoD:** you can `curl` your way through writing a small site,
+building it, and fetching the resulting HTML, without a browser
+involved.
 
-```
-extensions/arklight-fs (or a Tauri-specific sibling)
-        │
-        │  window.__TAURI__.core.invoke('fs_<verb>', {...})
-        ▼
-#[tauri::command] fn fs_<verb>(...) -> Result<T, FsError>
-        │
-        │  std::fs, resolved + escape-checked against workspace_root
-        ▼
-      disk
-```
+---
 
-Planned command surface, mapped 1:1 against the Flask endpoints above
-so the port is mechanical rather than a redesign:
+## Stage 2 — The virtual filesystem, wired to Stage 1
 
-| FileSystemProvider method | Tauri command (planned) | Flask equivalent |
-|---|---|---|
-| `stat` | `fs_stat(path)` | `GET /workspace/stat/<path>` |
-| `readDirectory` | `fs_list_dir(path)` | `GET /workspace/dir/<path>` |
-| `createDirectory` | `fs_create_dir(path)` | `POST /workspace/dir/<path>` |
-| `readFile` | `fs_read_file(path)` | `GET /workspace/file/<path>` |
-| `writeFile` | `fs_write_file(path, content, if_unmodified_since_mtime?)` | `PUT /workspace/file/<path>` |
-| `delete` | `fs_delete(path, recursive)` | `DELETE /workspace/file/<path>` |
-| `rename` | `fs_rename(from, to, overwrite)` | `PATCH /workspace/file/<path>` |
-| `copy` | `fs_copy(from, to, overwrite)` | `POST /workspace/copy` |
-| `onDidChangeFile` | Tauri `app.emit("arklight://fs-change", ...)`, JS side `listen()`s | SSE `GET /workspace/watch` |
-| file search | `fs_list_all()` | `GET /workspace/files` |
-| text search | `fs_search_text(query)` | `GET /workspace/search` |
+**Goal:** the workbench reads and writes real files through Flask.
 
-Design decisions this table already bakes in, so Stage 2 doesn't
-re-litigate them mid-implementation:
+- [ ] `workspaceProvider` supplied at construction, pointing at
+      `arklight:/project` (a `IFolderToOpen`, not a real disk path).
+- [ ] One bundled web extension — no Marketplace involved, it ships
+      with the app — whose `browser` entry point calls
+      `vscode.workspace.registerFileSystemProvider('arklight', ...)`.
+      Its `readFile`/`writeFile`/`readDirectory` are `fetch()` calls
+      against the Stage 1 endpoints.
 
-- **Same field names and semantics for stat data** (`path`, `type`,
-  `size`, `mtime`, `ctime` as seconds-since-epoch floats) as the Flask
-  contract. That's what lets `arklightFileSystemProvider.ts`'s
-  millisecond math (`Math.round(entry.mtime * 1000)`) carry over
-  unchanged — only the transport call changes, not the shape of the
-  data flowing through it.
-- **Optimistic concurrency carries over as a plain optional argument**
-  (`if_unmodified_since_mtime`) instead of an HTTP header, returning a
-  `Conflict` error kind with the current on-disk mtime attached — same
-  information Flask's 412 body carries, no HTTP status code to
-  shoehorn it into.
-- **Errors become a small Rust enum, not HTTP status codes** —
-  `FileNotFound` / `FileExists` / `NoPermissions` / `Conflict` /
-  `Invalid` / `Unavailable`, chosen to match what
-  `toFileSystemError()` already switches on client-side, so that
-  function's *shape* survives the port even though it stops parsing
-  HTTP responses.
-- **Watching becomes push, not poll.** Rust gets to use a real
-  filesystem-notification crate (`notify`, backed by inotify/FSEvents/
-  ReadDirectoryChangesW depending on OS) instead of the Flask
-  placeholder's re-walk-and-diff loop. This is a real behavioral
-  upgrade, not just a transport swap — cheaper and lower-latency.
-- **No HTTP envelope at all** — no JSON error bodies, no CORS, no
-  `X-Mtime` header, no localhost port to bind or firewall around. IPC
-  argument/return types replace all of it.
+**DoD:** open the app, the explorer shows the project's real files
+(served by Flask), you can open one, edit it, save it, and confirm
+via `curl` on the backend that the bytes on disk actually changed.
 
-## Open question Stage 2 has to resolve, not just implement
+---
 
-The Tauri roadmap already flags this and it's still unresolved: **does
-the JS side reuse/fork `extensions/arklight-fs`, or get written
-standalone against the lean `app/` bundle?**
+## Stage 3 — One command: Build
 
-- `extensions/arklight-fs` as it exists targets `application`'s full
-  source-tree build pipeline (its own `esbuild.mts`, `tsconfig.json`,
-  packaged as a VS Code extension with an `activate()` entry point).
-- `app/` (the Tauri branch's frontend) is `vscode-web`'s single
-  esbuild-bundled static output — workbench chrome and Monaco squashed
-  into one folder, *not* built through the same extension-host
-  pipeline `arklight-fs` assumes.
+**Goal:** the only "IDE feature" this MVP needs.
 
-Two ways this resolves, and this doc is where the decision should get
-recorded once made (not silently in a commit message):
+- [ ] Same extension registers one command, `arklight.build`, that
+      POSTs to `/api/build`.
+- [ ] Success → open the returned preview HTML (a Webview pointed at
+      a Flask-served static route is enough; no need for a real
+      dev-server proxy yet).
+- [ ] Failure → surface `CompileError`'s message as a VS Code error
+      notification. No custom diagnostics/squiggles yet — that's a
+      later nicety, not MVP.
+- [ ] Wire this to a keybinding or a single button in the UI (a
+      status bar item is the least amount of new UI to build).
 
-1. **Fork it** — a new `extensions/arklight-fs-tauri/` with the same
-   `FileSystemProvider`/`FileSearchProvider2`/`TextSearchProvider2`
-   shape, transport swapped to `invoke()`/`listen()`, built and bundled
-   into `app/` as part of the `vscode-web` gulp task (requires
-   confirming that task can bundle a built-in web extension the way it
-   bundles the workbench itself).
-2. **Standalone** — skip the extension-host contract entirely and
-   register a `workspaceProvider`-level filesystem hook directly
-   against whatever `app/`'s bundled entry point exposes, closer to
-   how `workbench.ts`'s `arklight:/project` default-open already
-   reaches past the extension layer in spirit.
+**DoD:** edit a site file, save, hit Build, see either the rendered
+page or a legible error, with no other panel, view, or menu in the
+product doing anything.
 
-Path 1 keeps parity with the browser shell's architecture (same
-provider interface, same search-provider registration, easiest to
-diff against `arklight-fs` when one changes) at the cost of pulling
-the full extension build pipeline into a project whose whole premise
-is a lean static bundle. Path 2 keeps Stage 1's "no dependency on the
-`application` branch's heavy build tooling beyond a one-time `app/`
-export" property, at the cost of not being a real VS Code
-`FileSystemProvider` anymore — losing built-in dirty-diff, undo/save
-integration, and conflict UX the extension API gives for free.
+---
 
-No code should assume an answer to this until it's picked — Stage 2's
-first concrete step is closing this question, not writing Rust.
+## Stage 4 — Call it done, then decide what's next
 
-## Compiler integration (Stage 3, both shells eventually)
+At this point you have: edit → save → build → see result, running
+entirely on Code OSS's web workbench plus one small extension plus
+one small Flask app, with everything in the "Out" list still absent
+and un-missed.
 
-Out of scope for this doc's revision, flagged for completeness: once
-Stage 2 lands, both shells eventually shell out to the `arklight` CLI
-(`arklight build`) to round-trip edits into a live-preview pane — see
-`TAURI-ROADMAP.md` Stage 3. The browser shell would do this from
-`backend/app.py` via `subprocess`; the native shell from Rust via
-`std::process::Command`. Neither is implemented yet in either shell.
-
-## Non-goals (both shells)
-
-No auth/user system, no terminal/PTY bridge, no bundled compiler
-runtime baked into either process. These are tracked (or deliberately
-not tracked) in `ROADMAP.md` and `TAURI-ROADMAP.md` and apply
-regardless of which shell is loading the workbench.
+Only after this loop is genuinely solid should any "Out" item get
+promoted back into scope — and each one should get argued for on its
+own, the same way this MVP was: what's the smallest version, what's
+the Definition of Done, what does it cost if it's wrong.
